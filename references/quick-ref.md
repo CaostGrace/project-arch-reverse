@@ -7,22 +7,55 @@
 | 资源 | 说明 |
 |------|------|
 | [project-types-config.md](project-types-config.md) | 项目类型检测配置、分析流程 |
-| [build-guide-android.md](build-guide-android.md) | Android 编译指南 |
-| [build-guide-ios.md](build-guide-ios.md) | iOS 编译指南 |
-| [build-guide-vue.md](build-guide-vue.md) | Vue.js 编译指南 |
-| [build-guide-react.md](build-guide-react.md) | React 编译指南 |
-| [build-guide-flutter.md](build-guide-flutter.md) | Flutter 编译指南 |
-| [build-guide-java-backend.md](build-guide-java-backend.md) | Java 后端编译指南 |
-| [build-guide-nodejs.md](build-guide-nodejs.md) | Node.js 编译指南 |
-| [build-guide-harmonyos.md](build-guide-harmonyos.md) | HarmonyOS Next 编译指南 |
+| [chapters-ref.md](chapters-ref.md) | 章节速查表（21章+11章详情） |
+| [mermaid-spec.md](mermaid-spec.md) | Mermaid 图表规范（完整版） |
+| [doc-format.md](doc-format.md) | 文档格式规范（完整版） |
+| [self-check-spec.md](self-check-spec.md) | 自检验证详细规格 |
+| [template.md](template.md) | 通用模板 |
+| [build-guide-*.md](build-guide-*.md) | 各项目类型编译指南 |
 
-## 文档章节速查
+## 执行预估
 
-### 根文档（21章）
-1. 文档修订历史 → 2. 项目架构概览 → 3. 项目简介 → 4. 术语与缩略语 → 5. 技术栈 → 6. 模块依赖关系图 → 7. 依赖关系分析 → 8. 模块简略介绍 → 9. 主要组件功能介绍 → 10. 主页面架构 → 11. 页面跳转详情 → 12. 主要业务流程图 → 13. 数据库设计 → 14. 核心数据类关系图 → 15. 架构决策记录 → 16. 接口设计 → 17. 部署与运维方案 → 18. 安全设计 → 19. 风险与应对措施 → 20. 模块文档索引 → 21. 项目编译指南
+| 项目规模 | 模块数量 | 预计耗时 | 说明 |
+|----------|----------|----------|------|
+| 小型 | ≤5 | 1-2分钟 | 快速扫描 |
+| 中型 | 6-20 | 3-5分钟 | 标准分析 |
+| 大型 | 21-50 | 5-10分钟 | 分批处理 |
+| 超大 | >50 | >10分钟 | 拆分为多个模块分别分析 |
 
-### 模块文档（11章）
-1. 模块概述 → 2. 依赖关系 → 3. 业务流程 → 4. 数据流 → 5. 核心功能流程图 → 6. 数据依赖关系 → 7. 依赖场景说明 → 8. 页面与路由 → 9. 导航调用示例 → 10. 关键类和方法 → 11. 测试策略
+> 💡 大型项目建议分批处理，每批≤20个模块
+
+## 何时使用
+
+### 推荐场景
+
+| 场景 | 使用 | 说明 |
+|------|------|------|
+| 分析项目结构 | ✅ | 快速了解项目整体架构 |
+| 生成架构文档 | ✅ | 为团队提供项目文档 |
+| 检测模块依赖 | ✅ | 识别循环依赖和优化机会 |
+| 分析页面导航 | ✅ | 理解页面跳转关系 |
+| 新人入职 | ✅ | 帮助新成员快速上手 |
+| AI Agent 分析 | ✅ | 辅助 AI 理解代码库 |
+| 项目重构前 | ✅ | 评估重构影响范围 |
+| 自检架构文档 | ✅ | 验证文档完整性 |
+
+### 不适用场景
+
+| 场景 | 使用 |
+|------|------|
+| 代码编写/重构 | ❌ |
+| Bug 修复 | ❌ |
+
+### 典型使用示例
+
+| 示例 | 用户输入 |
+|------|----------|
+| 新人入职 | "帮我分析一下这个项目的结构，我是新来的" |
+| 文档更新 | "这个项目已经有架构文档了，帮我更新一下" |
+| 架构评审 | "帮我检查一下项目中是否有循环依赖" |
+| 专项分析 | "帮我分析这个Android项目的模块依赖关系" |
+| 自检验证 | "帮我检查架构文档是否完整" |
 
 ## 执行策略选择
 
@@ -40,6 +73,48 @@
 ls docs/*.项目架构文档.md 2>/dev/null || echo "根文档不存在"
 find . -path "*/docs/*模块架构.md" 2>/dev/null | head -20
 
-# Android循环依赖检测
-./gradlew dependencyInsight --configuration releaseRuntimeClasspath --dependency :core:data
+# Android 项目
+find . -maxdepth 3 -name "settings.gradle*" -o -name "build.gradle*" | head -5
+find . -path "*/app/build.gradle*" -o -path "*/:core/*/build.gradle*" | head -10
+
+# iOS 项目
+find . -maxdepth 3 \( -name "*.xcworkspace" -o -name "Podfile" -o -name "*.swift" \) | head -10
+
+# Vue/React 项目
+find . -maxdepth 3 \( -name "package.json" -o -name "vite.config.*" -o -name "webpack.config.*" \) | head -5
+
+# Java 后端
+find . -maxdepth 3 \( -name "pom.xml" -o -name "build.gradle*" \) | head -5
+
+# Flutter
+find . -maxdepth 3 -name "pubspec.yaml" | head -5
+
+# HarmonyOS
+find . -maxdepth 3 \( -name "hvigorfile.ts" -o -name "oh-package.json5" \) | head -5
 ```
+
+## 模块依赖提取命令
+
+```bash
+# Android (Gradle) - 依赖提取
+./gradlew :app:dependencies --configuration releaseRuntimeClasspath 2>/dev/null | grep "^\\---" | head -30
+
+# 循环依赖检测
+./gradlew dependencyInsight --configuration releaseRuntimeClasspath --dependency :core:data 2>/dev/null
+
+# iOS (CocoaPods)
+cat Podfile | grep -E "^pod|^use_frameworks"
+xcodebuild -workspace *.xcworkspace -list 2>/dev/null | head -20
+
+# Web 项目 (package.json)
+cat package.json | grep -E '"dependencies"|"devDependencies"' -A 30 | grep -E '"@|' | head -20
+```
+
+## 文档输出位置
+
+| 类型 | 路径 | 命名 |
+|------|------|------|
+| 根文档 | `docs/` | `{项目名称}项目架构文档.md` |
+| 模块文档 | `<模块>/docs/` | `{模块名称}模块架构.md` |
+
+> ⚠️ **重要**：所有模块的架构文档都必须生成，不可省略！
