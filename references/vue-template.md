@@ -134,6 +134,329 @@ export const userService = {
 }
 ```
 
+### V8. 主要业务流程图 ★
+
+> ⚠️ **每个节点必须标注方法名和代码位置（文件:行号）**。以下为 Vue 3 项目典型业务流程示例。
+
+#### 12.1 项目整体业务流程
+
+```mermaid
+flowchart TB
+    subgraph App[应用启动]
+        LAUNCH[应用初始化<br/>⚙️ createApp()<br/>📁 src/main.ts:12]
+        INIT[插件注册<br/>⚙️ app.use(router).use(pinia)<br/>📁 src/main.ts:16]
+        LOAD[加载用户数据<br/>⚙️ useUserStore().fetchUser()<br/>📁 src/stores/userStore.ts:45]
+        LAUNCH --> INIT
+        INIT --> LOAD
+    end
+
+    subgraph HomeFlow[首页流程]
+        LOAD --> HOME[首页渲染<br/>⚙️ HomePage.vue mounted()<br/>📁 src/pages/HomePage.vue:34]
+        HOME --> FEED[内容列表<br/>⚙️ FeedList.vue fetchFeeds()<br/>📁 src/components/feed/FeedList.vue:56]
+        HOME --> SEARCH[搜索<br/>⚙️ SearchBar.vue onSearch()<br/>📁 src/components/search/SearchBar.vue:45]
+    end
+
+    subgraph FeatureFlow[功能流程]
+        FEED --> DETAIL[内容详情<br/>⚙️ DetailPage.vue setup()<br/>📁 src/pages/DetailPage.vue:67]
+        DETAIL --> BOOKMARK[收藏<br/>⚙️ BookmarkBtn.vue toggle()<br/>📁 src/components/bookmark/BookmarkBtn.vue:78]
+        DETAIL --> SHARE[分享<br/>⚙️ useShare().share()<br/>📁 src/composables/useShare.ts:34]
+    end
+
+    subgraph DataFlow[数据流程]
+        BOOKMARK --> COMPOSABLE[Composable<br/>⚙️ useBookmark().toggle()<br/>📁 src/composables/useBookmark.ts:23]
+        COMPOSABLE --> SERVICE[API Service<br/>⚙️ bookmarkService.toggle()<br/>📁 src/services/bookmarkService.ts:34]
+        SERVICE --> API[Axios<br/>⚙️ POST /api/bookmarks<br/>📁 src/utils/http.ts:56]
+    end
+
+    subgraph State[状态管理]
+        COMPOSABLE --> STORE[Pinia Store<br/>⚙️ useBookmarkStore()<br/>📁 src/stores/bookmarkStore.ts:45]
+    end
+```
+
+##### 12.1.1 业务流程步骤详解 ★
+
+| 步骤编号 | 步骤名称 | 核心方法/API | 输入参数 | 返回结果 | 代码位置 | 说明 |
+|----------|----------|-------------|----------|----------|----------|------|
+| 1 | 应用初始化 | `createApp(App).mount('#app')` | `App`: 根组件, `#app`: 挂载点 | `App` 实例 | `src/main.ts:12` | Vue 3 应用入口 |
+| 2 | 插件注册 | `app.use(router).use(createPinia())` | 各插件实例 | `App` 实例 | `src/main.ts:16` | 注册 Router/Pinia 等 |
+| 3 | 加载用户数据 | `useUserStore().fetchUser()` | - | `Promise<void>` | `src/stores/userStore.ts:45` | 获取登录态 |
+| 4 | 首页渲染 | `HomePage.vue onMounted()` | - | `void` | `src/pages/HomePage.vue:34` | 生命周期钩子触发数据加载 |
+| 5 | 内容列表 | `FeedList.vue fetchFeeds()` | - | `void → ref feeds` | `src/components/feed/FeedList.vue:56` | 异步获取内容 |
+| 6 | 搜索 | `SearchBar.vue emit('search', keyword)` | `keyword`: 搜索词 | `void` | `src/components/search/SearchBar.vue:45` | $emit 事件通知 |
+| 7 | 内容详情 | `DetailPage.vue setup()` | `route.params.id` | `void` | `src/pages/DetailPage.vue:67` | Composition API setup |
+| 8 | 收藏 | `BookmarkBtn.vue toggle()` | - | `void` | `src/components/bookmark/BookmarkBtn.vue:78` | 切换收藏状态 |
+| 9 | Composable | `useBookmark().toggle(itemId)` | `itemId`: string | `Promise<void>` | `src/composables/useBookmark.ts:23` | 可复用逻辑 |
+| 10 | API调用 | `bookmarkService.toggle(itemId)` | `itemId`: string | `Promise<BookmarkResult>` | `src/services/bookmarkService.ts:34` | Service 层 |
+| 11 | HTTP请求 | `http.post('/api/bookmarks', { itemId })` | `body`: JSON | `Promise<AxiosResponse>` | `src/utils/http.ts:56` | Axios 实例 |
+
+##### 12.1.2 关键步骤代码示例
+
+###### 步骤 4：首页渲染
+
+```vue
+<!-- 📁 src/pages/HomePage.vue:34 -->
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useFeedStore } from '@/stores/feedStore'
+
+const feedStore = useFeedStore()
+const isLoading = ref(false)                                         // L40
+
+onMounted(async () => {                                              // L42
+  isLoading.value = true
+  await feedStore.fetchFeeds()                                       // L44: → Pinia action
+  isLoading.value = false
+})
+</script>
+
+<template>
+  <main>
+    <HeroBanner />
+    <FeedList :items="feedStore.feeds" :loading="isLoading" />
+  </main>
+</template>
+```
+
+###### 步骤 9：收藏操作 (Composable)
+
+```ts
+// 📁 src/composables/useBookmark.ts:23
+export function useBookmark() {
+  const bookmarkStore = useBookmarkStore()
+  const toast = useToast()
+
+  const toggle = async (itemId: string) => {
+    try {
+      await bookmarkStore.toggleBookmark(itemId)                     // L29: → Pinia store
+      toast.success('操作成功')                                        // L30
+    } catch (error) {
+      toast.error('操作失败')                                          // L32
+    }
+  }
+
+  return { toggle, bookmarks: computed(() => bookmarkStore.items) }
+}
+```
+
+###### Pinia Store 中的业务操作
+
+```ts
+// 📁 src/stores/bookmarkStore.ts:45
+export const useBookmarkStore = defineStore('bookmark', {
+  state: () => ({
+    items: [] as Bookmark[],
+    loading: false,
+  }),
+  actions: {
+    async toggleBookmark(itemId: string) {
+      this.loading = true                                            // L52
+      try {
+        await bookmarkService.toggle(itemId)                         // L54: → API Service
+        await this.fetchBookmarks()                                  // L55: 刷新列表
+      } finally {
+        this.loading = false                                         // L57
+      }
+    },
+    async fetchBookmarks() {
+      this.items = await bookmarkService.getBookmarks()              // L61
+    },
+  },
+})
+```
+
+#### 12.2 核心功能模块流程（时序图）★
+
+##### 用户认证流程
+
+```mermaid
+sequenceDiagram
+    participant UI as LoginPage.vue
+    participant Form as LoginForm.vue
+    participant Store as useAuthStore
+    participant Service as authService
+    participant API as http (Axios)
+    participant Backend as API Server
+    participant Router as Vue Router
+
+    UI->>Form: @submit="handleLogin"
+    Note right of Form: 📁 src/components/auth/LoginForm.vue:34
+    Form->>Store: authStore.login(credentials)
+    Note right of Store: 📁 src/stores/authStore.ts:45
+    Store->>Service: authService.login(email, password)
+    Note right of Service: 📁 src/services/authService.ts:23
+    Service->>API: POST /api/auth/login
+    Note right of API: 📁 src/utils/http.ts:56
+    API->>Backend: HTTP POST { email, password }
+    Backend-->>API: { token, user }
+    API-->>Service: AuthResponse
+    Service-->>Store: token + user
+    Store->>Router: router.push('/dashboard')
+    Note right of Router: 📁 Store action: L56
+    Store-->>Form: success
+    Form-->>UI: redirect to dashboard
+```
+
+**步骤详解**：
+
+| 步骤 | 调用者 | 被调用者 | 方法签名 | 参数 | 返回 | 代码位置 | 说明 |
+|------|--------|----------|----------|------|------|----------|------|
+| 1 | LoginPage | LoginForm | `@submit="handleLogin(data)"` | `data: LoginFormData` | `void` | `src/components/auth/LoginForm.vue:34` | 表单提交 |
+| 2 | LoginForm | useAuthStore | `authStore.login(credentials)` | `credentials: {email, password}` | `Promise<void>` | `src/stores/authStore.ts:45` | Pinia action |
+| 3 | AuthStore | authService | `login(email, password)` | `email`, `password` | `Promise<AuthResponse>` | `src/services/authService.ts:23` | Service 层 |
+| 4 | authService | http | `POST /api/auth/login` | `{email, password}` | `Promise<AxiosResponse>` | `src/utils/http.ts:56` | Axios POST |
+| 5 | AuthStore | router | `router.push('/dashboard')` | `path`: string | `Promise<void>` | Store action L56 | 路由跳转 |
+
+**关键代码示例**：
+
+```ts
+// 📁 src/stores/authStore.ts:45 - 认证 Store
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null as User | null,
+    token: '' as string,
+    isAuthenticated: false,
+  }),
+  actions: {
+    async login(credentials: { email: string; password: string }) {
+      const { token, user } = await authService.login(              // L53
+        credentials.email, credentials.password
+      )
+      this.token = token                                             // L55
+      this.user = user                                               // L56
+      this.isAuthenticated = true                                    // L57
+      localStorage.setItem('token', token)                           // L58: 持久化
+      await router.push('/dashboard')                                // L59: 路由跳转
+    },
+    logout() {
+      this.$reset()                                                  // L62
+      localStorage.removeItem('token')                               // L63
+      router.push('/login')                                          // L64
+    },
+  },
+})
+```
+
+##### 内容加载与收藏流程
+
+```mermaid
+sequenceDiagram
+    participant Page as FeedPage.vue
+    participant Store as useFeedStore
+    participant Service as feedService
+    participant API as http (Axios)
+    participant Btn as BookmarkBtn.vue
+    participant Comp as useBookmark
+    participant BStore as useBookmarkStore
+
+    Page->>Store: feedStore.fetchFeeds()
+    Note right of Store: 📁 src/stores/feedStore.ts:34
+    Store->>Service: feedService.getFeeds({ page })
+    Note right of Service: 📁 src/services/feedService.ts:23
+    Service->>API: GET /api/feeds?page=1
+    Note right of API: 📁 src/utils/http.ts:45
+    API-->>Service: FeedDTO[]
+    Service-->>Store: Feed[]
+    Store-->>Page: reactive update
+
+    Page->>Btn: @click="handleBookmark"
+    Note right of Btn: 📁 src/components/bookmark/BookmarkBtn.vue:78
+    Btn->>Comp: useBookmark().toggle(itemId)
+    Note right of Comp: 📁 src/composables/useBookmark.ts:23
+    Comp->>BStore: bookmarkStore.toggleBookmark(itemId)
+    Note right of BStore: 📁 src/stores/bookmarkStore.ts:45
+    BStore->>Service: bookmarkService.toggle(itemId)
+    BStore->>API: POST /api/bookmarks { itemId }
+    API-->>BStore: BookmarkResult
+    BStore-->>Comp: success
+    Comp-->>Btn: update bookmark state
+```
+
+**步骤详解**：
+
+| 步骤 | 调用者 | 被调用者 | 方法签名 | 参数 | 返回 | 代码位置 | 说明 |
+|------|--------|----------|----------|------|------|----------|------|
+| 1 | FeedPage | useFeedStore | `feedStore.fetchFeeds()` | - | `Promise<void>` | `src/stores/feedStore.ts:34` | Pinia action |
+| 2 | FeedStore | feedService | `getFeeds(params)` | `{page: number}` | `Promise<Feed[]>` | `src/services/feedService.ts:23` | Service 层 |
+| 3 | feedService | http | `GET /api/feeds?page=1` | query params | `Promise<FeedDTO[]>` | `src/utils/http.ts:45` | Axios GET |
+| 4 | BookmarkBtn | useBookmark | `useBookmark().toggle(itemId)` | `itemId: string` | `Promise<void>` | `src/composables/useBookmark.ts:23` | Composable |
+| 5 | Composable | useBookmarkStore | `toggleBookmark(itemId)` | `itemId: string` | `Promise<void>` | `src/stores/bookmarkStore.ts:45` | Pinia action |
+| 6 | BookmarkStore | bookmarkService | `toggle(itemId)` | `itemId: string` | `Promise<BookmarkResult>` | `src/services/bookmarkService.ts:34` | Service 层 |
+| 7 | bookmarkService | http | `POST /api/bookmarks` | `{itemId}` | `Promise<Response>` | `src/utils/http.ts:56` | Axios POST |
+
+#### 12.3 核心功能流程图（分层）★
+
+##### 内容流分层流程
+
+```mermaid
+flowchart TB
+    subgraph Page[页面层]
+        FEED_PAGE["FeedPage.vue<br/>⚙️ setup() + onMounted()<br/>📁 src/pages/FeedPage.vue:34"]
+    end
+
+    subgraph Component[组件层]
+        FEED_LIST["FeedList.vue<br/>⚙️ FeedList({items, loading})<br/>📁 src/components/feed/FeedList.vue:56"]
+        BOOKMARK_BTN["BookmarkBtn.vue<br/>⚙️ BookmarkBtn({itemId})<br/>📁 src/components/bookmark/BookmarkBtn.vue:78"]
+    end
+
+    subgraph Composable[Composable层]
+        USE_FEED["useFeedList<br/>⚙️ fetchFeeds()/refresh()<br/>📁 src/composables/useFeedList.ts:23"]
+        USE_BOOKMARK["useBookmark<br/>⚙️ toggle()/isBookmarked()<br/>📁 src/composables/useBookmark.ts:23"]
+    end
+
+    subgraph Store[状态管理层]
+        FEED_STORE["useFeedStore<br/>⚙️ fetchFeeds()/feeds<br/>📁 src/stores/feedStore.ts:34"]
+        BOOKMARK_STORE["useBookmarkStore<br/>⚙️ toggleBookmark()/items<br/>📁 src/stores/bookmarkStore.ts:45"]
+    end
+
+    subgraph Service[服务层]
+        FEED_SVC["feedService<br/>⚙️ getFeeds()/getFeedById()<br/>📁 src/services/feedService.ts:23"]
+        BOOKMARK_SVC["bookmarkService<br/>⚙️ toggle()/getBookmarks()<br/>📁 src/services/bookmarkService.ts:34"]
+    end
+
+    subgraph HTTP[网络层]
+        HTTP_CLIENT["http (Axios)<br/>⚙️ get()/post()<br/>📁 src/utils/http.ts:56"]
+    end
+
+    FEED_PAGE --> FEED_LIST
+    FEED_LIST --> USE_FEED
+    FEED_LIST --> BOOKMARK_BTN
+    BOOKMARK_BTN --> USE_BOOKMARK
+    USE_FEED --> FEED_STORE
+    USE_BOOKMARK --> BOOKMARK_STORE
+    FEED_STORE --> FEED_SVC
+    BOOKMARK_STORE --> BOOKMARK_SVC
+    FEED_SVC --> HTTP_CLIENT
+    BOOKMARK_SVC --> HTTP_CLIENT
+
+    style FEED_PAGE fill:#e1f5fe
+    style FEED_LIST fill:#fff3e0
+    style USE_FEED fill:#e8f5e9
+    style HTTP_CLIENT fill:#fce4ec
+```
+
+**步骤与API详解**：
+
+| 步骤 | 组件 | 核心方法 | 参数类型 | 返回类型 | 代码位置 | 关键逻辑 |
+|------|------|----------|----------|----------|----------|----------|
+| 1 | FeedPage | `onMounted(() => fetchFeeds())` | - | `void` | `src/pages/FeedPage.vue:34` | Vue 生命周期钩子 |
+| 2 | FeedList | `FeedList({items, loading})` | `items: Feed[]`, `loading: boolean` | 渲染列表 | `src/components/feed/FeedList.vue:56` | defineProps |
+| 3 | BookmarkBtn | `BookmarkBtn({itemId})` | `itemId: string` | 收藏按钮 | `src/components/bookmark/BookmarkBtn.vue:78` | defineEmits/defineProps |
+| 4 | useFeedList | `fetchFeeds()` | - | `void → ref feeds` | `src/composables/useFeedList.ts:23` | Composable 封装 |
+| 5 | useBookmark | `toggle(itemId)` | `itemId: string` | `Promise<void>` | `src/composables/useBookmark.ts:23` | Composable 封装 |
+| 6 | useFeedStore | `fetchFeeds()` | - | `Promise<void> → reactive feeds` | `src/stores/feedStore.ts:34` | Pinia action |
+| 7 | feedService | `getFeeds(params)` | `FeedParams` | `Promise<Feed[]>` | `src/services/feedService.ts:23` | Axios 调用 |
+
+#### 12.4 业务流程说明（含代码位置、API详情）★
+
+| 流程名称 | 涉及模块 | 入口方法 | 核心API链路 | 参数/返回 | 代码位置 | 功能描述 |
+|----------|----------|----------|-------------|-----------|----------|----------|
+| 用户认证 | auth | `LoginForm @submit` | `authStore.login()` → `authService.login()` → `POST /api/auth/login` | `{email, password}` → `token + user` | `src/components/auth/LoginForm.vue:34` | Pinia + localStorage 持久化 |
+| 首页加载 | feed | `FeedPage onMounted()` | `feedStore.fetchFeeds()` → `feedService.getFeeds()` → `GET /api/feeds` | `{page}` → `Feed[]` | `src/pages/FeedPage.vue:34` | 响应式数据绑定 |
+| 内容详情 | detail | `DetailPage setup()` | `feedStore.fetchFeedById(route.params.id)` → `GET /api/feeds/:id` | `id: string` → `Feed` | `src/pages/DetailPage.vue:67` | Vue Router params |
+| 搜索功能 | search | `SearchBar @search` | `useSearch().search(keyword)` → `searchService.search()` → `GET /api/search?q=` | `q: string` → `SearchResult[]` | `src/components/search/SearchBar.vue:45` | 防抖组合式函数 |
+| 收藏操作 | bookmark | `BookmarkBtn @click` | `useBookmark().toggle()` → `bookmarkStore.toggleBookmark()` → `POST /api/bookmarks` | `itemId: string` → `void` | `src/components/bookmark/BookmarkBtn.vue:78` | Composable → Store → Service |
+| 状态管理 | stores | `useXxxStore()` | `Pinia defineStore` → `actions` → `reactive state` | - → `reactive` | `src/stores/*.ts` | Pinia 响应式状态 |
+
 ## 标准章节参考
 
 详见 [template.md](./template.md) 中的标准章节结构。
