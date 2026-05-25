@@ -129,28 +129,40 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph Init[初始化阶段]
-        START[启动<br/>⚙️ MainEntry.init()<br/>📁 app/MainEntry.java:23] --> CONFIG[加载配置<br/>⚙️ ConfigLoader.load()<br/>📁 core/ConfigLoader.ts:34]
-        CONFIG --> AUTH[认证授权<br/>⚙️ AuthService.login()<br/>📁 auth/AuthService.java:56]
+        START["启动<br>MainEntry.init()<br>app/MainEntry.java:23"]
+        CONFIG --> AUTH[认证授权<br>AuthService.login()<br>auth/AuthService.java:56]
     end
-
     subgraph Core[核心业务]
-        AUTH --> HOME[业务首页<br/>⚙️ HomeController.index()<br/>📁 modules/home/HomeController.py:78]
-        HOME --> FEATURE_A[功能模块A<br/>⚙️ ModuleAService.handle()<br/>📁 modules/featureA/ModuleAService.java:45]
-        HOME --> FEATURE_B[功能模块B<br/>⚙️ ModuleBService.handle()<br/>📁 modules/featureB/ModuleBService.ts:32]
-        FEATURE_A --> DETAIL[详情流程<br/>⚙️ DetailHandler.show()<br/>📁 modules/detail/DetailHandler.py:67]
+        HOME["业务首页<br>HomeController.index()<br>modules/home/HomeController.py:78"]
+        FEATURE_A["功能模块A<br>ModuleAService.handle()<br>modules/featureA/ModuleAService.java:45"]
+        FEATURE_B["功能模块B<br>ModuleBService.handle()<br>modules/featureB/ModuleBService.ts:32"]
+        DETAIL["详情流程<br>DetailHandler.show()<br>modules/detail/DetailHandler.py:67"]
+        HOME --> FEATURE_A
+        HOME --> FEATURE_B
+        FEATURE_A --> DETAIL
         FEATURE_B --> DETAIL
     end
-
     subgraph Data[数据层]
-        DETAIL --> REPO[数据仓储<br/>⚙️ DataRepository.fetch()<br/>📁 data/DataRepository.java:89]
-        REPO --> LOCAL[(本地存储<br/>⚙️ LocalDS.query()<br/>📁 data/local/LocalDS.ts:45)]
-        REPO --> REMOTE[(远程服务<br/>⚙️ RemoteDS.request()<br/>📁 data/remote/RemoteDS.go:112)]
+        REPO["数据仓储<br>DataRepository.fetch()<br>data/DataRepository.java:89"]
+        LOCAL[("本地存储<br>LocalDS.query()<br>data/local/LocalDS.ts:45)"]
+        REMOTE[("远程服务<br>RemoteDS.request()<br>data/remote/RemoteDS.go:112)"]
+        REPO --> LOCAL
+        REPO --> REMOTE
+    end
+    subgraph Background[后台任务]
+        SYNC["数据同步<br>SyncManager.sync()<br>core/SyncManager.py:56"]
+        NOTIFY["通知推送<br>NotifyService.push()<br>core/NotifyService.java:78"]
+        SYNC --> NOTIFY
     end
 
-    subgraph Background[后台任务]
-        REPO --> SYNC[数据同步<br/>⚙️ SyncManager.sync()<br/>📁 core/SyncManager.py:56]
-        SYNC --> NOTIFY[通知推送<br/>⚙️ NotifyService.push()<br/>📁 core/NotifyService.java:78]
-    end
+
+AUTH --> HOME
+
+
+DETAIL --> REPO
+
+
+REPO --> SYNC
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -224,24 +236,24 @@ sequenceDiagram
     participant Remote as RemoteDataSource
 
     UI->>Logic: loadData()
-    Note right of Logic: 📁 modules/featureA/ModuleAService.java:45
+    Note right of Logic:  modules/featureA/ModuleAService.java:45
     Logic->>UC_A: execute(params)
-    Note right of UC_A: 📁 services/ProcessAStep.java:23
+    Note right of UC_A:  services/ProcessAStep.java:23
     UC_A->>UC_B: filter(data)
-    Note right of UC_B: 📁 services/ProcessBStep.ts:34
+    Note right of UC_B:  services/ProcessBStep.ts:34
     UC_B->>Repo: fetchData(query)
-    Note right of Repo: 📁 data/ModuleARepository.java:67
+    Note right of Repo:  data/ModuleARepository.java:67
     Repo->>Local: queryLocal()
-    Note right of Local: 📁 data/local/LocalDS.ts:45
+    Note right of Local:  data/local/LocalDS.ts:45
     Local-->>Repo: localResults
     Repo->>Remote: requestRemote()
-    Note right of Remote: 📁 data/remote/RemoteDS.py:112
+    Note right of Remote:  data/remote/RemoteDS.py:112
     Remote-->>Repo: remoteResults
     Repo-->>UC_B: mergedData
-    Note left of Repo: 📁 data/ModuleARepository.java:89<br/>merge strategy
+    Note left of Repo:  data/ModuleARepository.java:89<br>merge strategy
     UC_B-->>UC_A: filteredData
     UC_A-->>Logic: SuccessResult
-    Note left of UC_A: 📁 services/ProcessAStep.java:56
+    Note left of UC_A:  services/ProcessAStep.java:56
     Logic-->>UI: updateState
 ```
 
@@ -280,19 +292,19 @@ sequenceDiagram
     participant API as ApiClient
 
     UI->>Logic: search(keyword)
-    Note right of Logic: 📁 modules/search/SearchService.java:56
+    Note right of Logic:  modules/search/SearchService.java:56
     Logic->>UC: execute(keyword)
-    Note right of UC: 📁 services/SearchLogic.ts:23
+    Note right of UC:  services/SearchLogic.ts:23
     UC->>Repo: searchContent(query)
-    Note right of Repo: 📁 data/SearchRepository.java:45
+    Note right of Repo:  data/SearchRepository.java:45
     Repo->>Cache: getCache(keyword)
-    Note right of Cache: 📁 core/CacheService.py:34
+    Note right of Cache:  core/CacheService.py:34
     Cache-->>Repo: cachedResult (hit/miss)
     Repo->>API: GET /search?q=keyword
-    Note right of API: 📁 network/ApiClient.ts:89
+    Note right of API:  network/ApiClient.ts:89
     API-->>Repo: SearchResponse
     Repo-->>UC: combinedResults
-    Note left of Repo: 📁 data/SearchRepository.java:78<br/>merge cache+remote
+    Note left of Repo:  data/SearchRepository.java:78<br>merge cache+remote
     UC-->>Logic: SearchResult
     Logic-->>UI: showResults
 ```
@@ -331,32 +343,33 @@ public SearchResult searchContent(String query) {
 ```mermaid
 flowchart TB
     subgraph Presentation[表现层]
-        SCREEN_A["ModuleAPage<br/>⚙️ render()<br/>📁 modules/featureA/ModuleAPage.java:34"]
+        SCREEN_A["ModuleAPage<br>render()<br>modules/featureA/ModuleAPage.java:34"]
     end
-
     subgraph Business[业务层]
-        LOGIC_A["ModuleAService<br/>⚙️ loadData()/refresh()<br/>📁 modules/featureA/ModuleAService.java:45"]
-        USE_CASE_A["ProcessAStep<br/>⚙️ execute(params)<br/>📁 services/ProcessAStep.java:23"]
-        USE_CASE_B["ProcessBStep<br/>⚙️ filter()/transform()<br/>📁 services/ProcessBStep.ts:34"]
+        LOGIC_A["ModuleAService<br>loadData()/refresh()<br>modules/featureA/ModuleAService.java:45"]
+        USE_CASE_A["ProcessAStep<br>execute(params)<br>services/ProcessAStep.java:23"]
+        USE_CASE_B["ProcessBStep<br>filter()/transform()<br>services/ProcessBStep.ts:34"]
     end
-
     subgraph Data[数据层]
-        REPO_A["ModuleARepository<br/>⚙️ fetchData()/saveData()<br/>📁 data/ModuleARepository.java:67"]
-        LOCAL_DS["LocalDataSource<br/>⚙️ query()/insert()<br/>📁 data/local/LocalDS.ts:45"]
-        REMOTE_DS["RemoteDataSource<br/>⚙️ request()/poll()<br/>📁 data/remote/RemoteDS.py:112"]
+        REPO_A["ModuleARepository<br>fetchData()/saveData()<br>data/ModuleARepository.java:67"]
+        LOCAL_DS["LocalDataSource<br>query()/insert()<br>data/local/LocalDS.ts:45"]
+        REMOTE_DS["RemoteDataSource<br>request()/poll()<br>data/remote/RemoteDS.py:112"]
     end
 
-    SCREEN_A --> LOGIC_A
-    LOGIC_A --> USE_CASE_A
-    USE_CASE_A --> USE_CASE_B
-    USE_CASE_B --> REPO_A
-    REPO_A --> LOCAL_DS
-    REPO_A --> REMOTE_DS
 
-    style SCREEN_A fill:#e1f5fe
-    style LOGIC_A fill:#fff3e0
-    style USE_CASE_A fill:#e8f5e9
-    style REPO_A fill:#fce4ec
+
+
+SCREEN_A --> LOGIC_A
+LOGIC_A --> USE_CASE_A
+USE_CASE_A --> USE_CASE_B
+USE_CASE_B --> REPO_A
+REPO_A --> LOCAL_DS
+REPO_A --> REMOTE_DS
+
+style SCREEN_A fill:#e1f5fe
+style LOGIC_A fill:#fff3e0
+style USE_CASE_A fill:#e8f5e9
+style REPO_A fill:#fce4ec
 ```
 
 **配套时序图**：
@@ -372,18 +385,18 @@ sequenceDiagram
     participant Remote as RemoteDS
 
     Page->>Service: loadData()
-    Note right of Service: 📁 modules/featureA/ModuleAService.java:45
+    Note right of Service:  modules/featureA/ModuleAService.java:45
     Service->>Step: execute(params)
-    Note right of Step: 📁 services/ProcessAStep.java:23
+    Note right of Step:  services/ProcessAStep.java:23
     Step->>Filter: filter(rawData)
-    Note right of Filter: 📁 services/ProcessBStep.ts:34
+    Note right of Filter:  services/ProcessBStep.ts:34
     Filter->>Repo: fetchData(query)
-    Note right of Repo: 📁 data/ModuleARepository.java:67
+    Note right of Repo:  data/ModuleARepository.java:67
     Repo->>Local: query()
-    Note right of Local: 📁 data/local/LocalDS.ts:45
+    Note right of Local:  data/local/LocalDS.ts:45
     Local-->>Repo: localResults
     Repo->>Remote: request()
-    Note right of Remote: 📁 data/remote/RemoteDS.py:112
+    Note right of Remote:  data/remote/RemoteDS.py:112
     Remote-->>Repo: remoteResults
     Repo-->>Filter: mergedData
     Filter-->>Step: filteredData
@@ -428,17 +441,17 @@ public SuccessResult execute(Params params) {
 
 ```mermaid
 sequenceDiagram
-    participant ModuleA as ModuleAPage<br/>feature:moduleA
-    participant ModuleB as ModuleBService<br/>feature:moduleB
-    participant Core as CoreService<br/>core:data
+    participant ModuleA as ModuleAPage<br>feature:moduleA
+    participant ModuleB as ModuleBService<br>feature:moduleB
+    participant Core as CoreService<br>core:data
 
     ModuleA->>ModuleB: callService(params)
-    Note right of ModuleB: 📁 modules/featureB/ModuleBService.java:45
+    Note right of ModuleB:  modules/featureB/ModuleBService.java:45
     ModuleB->>Core: fetchData(id)
-    Note right of Core: 📁 core/data/CoreService.ts:78
+    Note right of Core:  core/data/CoreService.ts:78
     Core-->>ModuleB: DataResult
     ModuleB-->>ModuleA: transformedData
-    Note left of ModuleB: 📁 modules/featureB/ModuleBService.java:67<br/>transform response
+    Note left of ModuleB:  modules/featureB/ModuleBService.java:67<br>transform response
 ```
 
 ### 13. 数据库设计
@@ -583,21 +596,22 @@ classDiagram
 ```mermaid
 flowchart TB
     subgraph UI[表现层]
-        A["入口页面<br/>⚙️ ModulePage.render()<br/>📁 modules/{模块名}/ModulePage.java:34"]
+        A["入口页面<br>ModulePage.render()<br>modules/{模块名}/ModulePage.java:34"]
     end
     subgraph Logic[业务层]
-        B["服务类<br/>⚙️ ModuleService.load()<br/>📁 modules/{模块名}/ModuleService.java:45"]
-        C["业务逻辑<br/>⚙️ ProcessLogic.execute()<br/>📁 services/ProcessLogic.ts:23"]
+        B["服务类<br>ModuleService.load()<br>modules/{模块名}/ModuleService.java:45"]
+        C["业务逻辑<br>ProcessLogic.execute()<br>services/ProcessLogic.ts:23"]
     end
     subgraph Data[数据层]
-        D["数据访问<br/>⚙️ ModuleRepository.fetch()<br/>📁 data/ModuleRepository.java:67"]
-        E["数据源<br/>⚙️ ModuleDS.query()<br/>📁 data/ModuleDS.py:45"]
+        D["数据访问<br>ModuleRepository.fetch()<br>data/ModuleRepository.java:67"]
+        E["数据源<br>ModuleDS.query()<br>data/ModuleDS.py:45"]
     end
 
-    A --> B
-    B --> C
-    C --> D
-    D --> E
+
+A --> B
+B --> C
+C --> D
+D --> E
 ```
 
 #### 3.1 步骤API详解
@@ -630,18 +644,18 @@ sequenceDiagram
     participant DS as DataSource
 
     UI->>Logic: loadData()
-    Note right of Logic: 📁 modules/{模块名}/ModuleService.java:45
+    Note right of Logic:  modules/{模块名}/ModuleService.java:45
     Logic->>UC: execute(params)
-    Note right of UC: 📁 services/ProcessLogic.ts:23
+    Note right of UC:  services/ProcessLogic.ts:23
     UC->>Repo: fetchData()
-    Note right of Repo: 📁 data/ModuleRepository.java:67
+    Note right of Repo:  data/ModuleRepository.java:67
     Repo->>DS: query()
-    Note right of DS: 📁 data/ModuleDS.py:45
+    Note right of DS:  data/ModuleDS.py:45
     DS-->>Repo: rawData
     Repo-->>UC: domainData
-    Note left of Repo: 📁 data/ModuleRepository.java:89<br/>map to domain model
+    Note left of Repo:  data/ModuleRepository.java:89<br>map to domain model
     UC-->>Logic: ResultState
-    Note left of UC: 📁 services/ProcessLogic.ts:56
+    Note left of UC:  services/ProcessLogic.ts:56
     Logic-->>UI: render
 ```
 
@@ -674,13 +688,13 @@ sequenceDiagram
     participant External as {外部依赖}
 
     Trigger->>Logic: {方法名}({参数})
-    Note right of Logic: 📁 {文件路径:行号}
+    Note right of Logic:  {文件路径:行号}
     Logic->>UC: {方法名}({参数})
-    Note right of UC: 📁 {文件路径:行号}
+    Note right of UC:  {文件路径:行号}
     UC->>Repo: {方法名}({参数})
-    Note right of Repo: 📁 {文件路径:行号}
+    Note right of Repo:  {文件路径:行号}
     Repo->>External: {请求/查询}
-    Note right of External: 📁 {文件路径:行号}
+    Note right of External:  {文件路径:行号}
     External-->>Repo: {返回结果}
     Repo-->>UC: {转换后数据}
     UC-->>Logic: {处理结果}

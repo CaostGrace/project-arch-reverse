@@ -149,33 +149,46 @@ export const Button = () => <button className={styles.button}>Click</button>
 ```mermaid
 flowchart TB
     subgraph App[应用启动]
-        LAUNCH[页面加载<br/>⚙️ RootLayout({children})<br/>📁 src/app/layout.tsx:12]
-        INIT[Provider初始化<br/>⚙️ Providers({children})<br/>📁 src/app/providers.tsx:23]
-        LOAD[加载用户会话<br/>⚙️ useSession() → getServerSession()<br/>📁 src/lib/auth.ts:45]
+        LAUNCH["页面加载<br>RootLayout({children})<br>src/app/layout.tsx:12"]
+        INIT["Provider初始化<br>Providers({children})<br>src/app/providers.tsx:23"]
+        LOAD["加载用户会话<br>useSession() → getServerSession()<br>src/lib/auth.ts:45"]
         LAUNCH --> INIT
         INIT --> LOAD
     end
-
     subgraph HomeFlow[首页流程]
-        LOAD --> HOME[首页渲染<br/>⚙️ HomePage()<br/>📁 src/app/(main)/page.tsx:34]
-        HOME --> FEED[内容列表<br/>⚙️ FeedList({data})<br/>📁 src/components/feed/FeedList.tsx:56]
-        HOME --> SEARCH[搜索<br/>⚙️ SearchBar({onSearch})<br/>📁 src/components/search/SearchBar.tsx:45]
+        HOME["首页渲染<br>HomePage()<br>src/app/(main)/page.tsx:34"]
+        FEED["内容列表<br>FeedList({data})<br>src/components/feed/FeedList.tsx:56"]
+        SEARCH["搜索<br>SearchBar({onSearch})<br>src/components/search/SearchBar.tsx:45"]
+        HOME --> FEED
+        HOME --> SEARCH
     end
-
     subgraph FeatureFlow[功能流程]
-        FEED --> DETAIL[内容详情<br/>⚙️ DetailPage({params})<br/>📁 src/app/feed/[id]/page.tsx:67]
-        DETAIL --> BOOKMARK[收藏<br/>⚙️ BookmarkButton({itemId})<br/>📁 src/components/bookmark/BookmarkButton.tsx:78]
+        DETAIL["内容详情<br>DetailPage({params})<br>src/app/feed/[id]/page.tsx:67"]
+        BOOKMARK["收藏<br>BookmarkButton({itemId})<br>src/components/bookmark/BookmarkButton.tsx:78"]
+        DETAIL --> BOOKMARK
     end
-
     subgraph DataFlow[数据流程]
-        BOOKMARK --> QUERY[React Query<br/>⚙️ useMutation(bookmarkFn)<br/>📁 src/hooks/useBookmark.ts:23]
-        QUERY --> API[API Service<br/>⚙️ bookmarkService.toggle()<br/>📁 src/services/bookmarkService.ts:34]
-        API --> REMOTE[Fetch/axios<br/>⚙️ POST /api/bookmarks<br/>📁 src/lib/apiClient.ts:56]
+        QUERY["React Query<br>useMutation(bookmarkFn)<br>src/hooks/useBookmark.ts:23"]
+        API["API Service<br>bookmarkService.toggle()<br>src/services/bookmarkService.ts:34"]
+        REMOTE["Fetch/axios<br>POST /api/bookmarks<br>src/lib/apiClient.ts:56"]
+        QUERY --> API
+        API --> REMOTE
+    end
+    subgraph State[状态管理]
+        STORE["Zustand Store<br>useUserStore()<br>src/stores/userStore.ts:45"]
     end
 
-    subgraph State[状态管理]
-        QUERY --> STORE[Zustand Store<br/>⚙️ useUserStore()<br/>📁 src/stores/userStore.ts:45]
-    end
+
+LOAD --> HOME
+
+
+FEED --> DETAIL
+
+
+BOOKMARK --> QUERY
+
+
+QUERY --> STORE
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -258,20 +271,20 @@ sequenceDiagram
     participant Store as useUserStore
 
     UI->>Form: onSubmit({email, password})
-    Note right of Form: 📁 src/components/auth/LoginForm.tsx:34
+    Note right of Form:  src/components/auth/LoginForm.tsx:34
     Form->>Hook: loginMutation.mutate(credentials)
-    Note right of Hook: 📁 src/hooks/useLogin.ts:23
+    Note right of Hook:  src/hooks/useLogin.ts:23
     Hook->>Auth: login(email, password)
-    Note right of Auth: 📁 src/services/authService.ts:45
+    Note right of Auth:  src/services/authService.ts:45
     Auth->>API: POST /api/auth/login
-    Note right of API: 📁 src/lib/apiClient.ts:56
+    Note right of API:  src/lib/apiClient.ts:56
     API->>Backend: NextAuth signIn('credentials')
-    Note right of Backend: 📁 src/app/api/auth/[...nextauth]/route.ts:34
+    Note right of Backend:  src/app/api/auth/[...nextauth]/route.ts:34
     Backend-->>API: session + JWT cookie
     API-->>Auth: AuthResponse
     Auth-->>Hook: UserSession
     Hook->>Store: useUserStore.getState().setUser(user)
-    Note right of Store: 📁 src/stores/userStore.ts:45
+    Note right of Store:  src/stores/userStore.ts:45
     Hook-->>Form: success/invalidate
     Form-->>UI: router.push('/dashboard')
 ```
@@ -322,20 +335,20 @@ sequenceDiagram
     participant Store as useUserStore
 
     Page->>Query: useQuery({ queryKey: ['feeds'] })
-    Note right of Query: 📁 src/hooks/useFeedQuery.ts:23
+    Note right of Query:  src/hooks/useFeedQuery.ts:23
     Query->>Service: getFeeds({ page, userId })
-    Note right of Service: 📁 src/services/feedService.ts:34
+    Note right of Service:  src/services/feedService.ts:34
     Service->>API: GET /api/feeds?page=1
-    Note right of API: 📁 src/lib/apiClient.ts:45
+    Note right of API:  src/lib/apiClient.ts:45
     API->>Backend: GET handler
-    Note right of Backend: 📁 src/app/api/feeds/route.ts:23
+    Note right of Backend:  src/app/api/feeds/route.ts:23
     Backend-->>API: FeedResponse
     API-->>Service: FeedDTO[]
     Service-->>Query: Feed[]
     Query-->>Page: { data, isLoading }
 
     Page->>Bookmark: bookmarkMutation.mutate()
-    Note right of Bookmark: 📁 src/hooks/useBookmark.ts:23
+    Note right of Bookmark:  src/hooks/useBookmark.ts:23
     Bookmark->>Service: bookmarkService.toggle(itemId)
     Bookmark->>API: POST /api/bookmarks { itemId }
     API-->>Bookmark: BookmarkResult
@@ -361,43 +374,44 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     subgraph Page[页面层]
-        FEED_PAGE["FeedPage (RSC/SSR)<br/>⚙️ async function FeedPage()<br/>📁 src/app/feed/page.tsx:34"]
+        FEED_PAGE["FeedPage (RSC/SSR)<br>async function FeedPage()<br>src/app/feed/page.tsx:34"]
     end
-
     subgraph Component[组件层]
-        FEED_LIST["FeedList<br/>⚙️ FeedList({initialData, userId})<br/>📁 src/components/feed/FeedList.tsx:56"]
-        BOOKMARK_BTN["BookmarkButton<br/>⚙️ BookmarkButton({itemId})<br/>📁 src/components/bookmark/BookmarkButton.tsx:78"]
+        FEED_LIST["FeedList<br>FeedList({initialData, userId})<br>src/components/feed/FeedList.tsx:56"]
+        BOOKMARK_BTN["BookmarkButton<br>BookmarkButton({itemId})<br>src/components/bookmark/BookmarkButton.tsx:78"]
     end
-
     subgraph Hook[Hook层]
-        USE_FEED["useFeedQuery<br/>⚙️ useQuery()<br/>📁 src/hooks/useFeedQuery.ts:23"]
-        USE_BOOKMARK["useBookmark<br/>⚙️ useMutation()<br/>📁 src/hooks/useBookmark.ts:23"]
+        USE_FEED["useFeedQuery<br>useQuery()<br>src/hooks/useFeedQuery.ts:23"]
+        USE_BOOKMARK["useBookmark<br>useMutation()<br>src/hooks/useBookmark.ts:23"]
     end
-
     subgraph Service[服务层]
-        FEED_SVC["feedService<br/>⚙️ getFeeds()/getFeedById()<br/>📁 src/services/feedService.ts:34"]
-        BOOKMARK_SVC["bookmarkService<br/>⚙️ toggle()/getBookmarks()<br/>📁 src/services/bookmarkService.ts:34"]
+        FEED_SVC["feedService<br>getFeeds()/getFeedById()<br>src/services/feedService.ts:34"]
+        BOOKMARK_SVC["bookmarkService<br>toggle()/getBookmarks()<br>src/services/bookmarkService.ts:34"]
     end
-
     subgraph Data[数据层]
-        API_CLIENT["apiClient<br/>⚙️ get()/post()<br/>📁 src/lib/apiClient.ts:56"]
-        STORE["Zustand Store<br/>⚙️ useUserStore()<br/>📁 src/stores/userStore.ts:45"]
+        API_CLIENT["apiClient<br>get()/post()<br>src/lib/apiClient.ts:56"]
+        STORE["Zustand Store<br>useUserStore()<br>src/stores/userStore.ts:45"]
     end
 
-    FEED_PAGE --> FEED_LIST
-    FEED_LIST --> USE_FEED
-    FEED_LIST --> BOOKMARK_BTN
-    BOOKMARK_BTN --> USE_BOOKMARK
-    USE_FEED --> FEED_SVC
-    USE_BOOKMARK --> BOOKMARK_SVC
-    FEED_SVC --> API_CLIENT
-    BOOKMARK_SVC --> API_CLIENT
-    USE_BOOKMARK --> STORE
 
-    style FEED_PAGE fill:#e1f5fe
-    style FEED_LIST fill:#fff3e0
-    style USE_FEED fill:#e8f5e9
-    style API_CLIENT fill:#fce4ec
+
+
+
+
+FEED_PAGE --> FEED_LIST
+FEED_LIST --> USE_FEED
+FEED_LIST --> BOOKMARK_BTN
+BOOKMARK_BTN --> USE_BOOKMARK
+USE_FEED --> FEED_SVC
+USE_BOOKMARK --> BOOKMARK_SVC
+FEED_SVC --> API_CLIENT
+BOOKMARK_SVC --> API_CLIENT
+USE_BOOKMARK --> STORE
+
+style FEED_PAGE fill:#e1f5fe
+style FEED_LIST fill:#fff3e0
+style USE_FEED fill:#e8f5e9
+style API_CLIENT fill:#fce4ec
 ```
 
 **步骤与API详解**：

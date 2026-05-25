@@ -132,32 +132,44 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph Request[请求入口]
-        CLIENT[客户端请求<br/>⚙️ HTTP Request → DispatcherServlet<br/>📁 org.springframework.web.servlet]
-        FILTER[过滤器链<br/>⚙️ SecurityFilterChain.filter()<br/>📁 config/SecurityConfig.java:34]
-        INTERCEPTOR[拦截器<br/>⚙️ AuthInterceptor.preHandle()<br/>📁 interceptor/AuthInterceptor.java:45]
+        CLIENT["客户端请求<br>HTTP Request → DispatcherServlet<br>org.springframework.web.servlet"]
+        FILTER["过滤器链<br>SecurityFilterChain.filter()<br>config/SecurityConfig.java:34"]
+        INTERCEPTOR["拦截器<br>AuthInterceptor.preHandle()<br>interceptor/AuthInterceptor.java:45"]
         CLIENT --> FILTER
         FILTER --> INTERCEPTOR
     end
-
     subgraph Controller[控制层]
-        INTERCEPTOR --> CTRL[UserController<br/>⚙️ getUserList()/createUser()<br/>📁 controller/UserController.java:56]
-        CTRL --> VALID[参数校验<br/>⚙️ @Valid + Validator.validate()<br/>📁 dto/CreateUserDTO.java:23]
+        CTRL["UserController<br>getUserList()/createUser()<br>controller/UserController.java:56"]
+        VALID["参数校验<br>@Valid + Validator.validate()<br>dto/CreateUserDTO.java:23"]
+        CTRL --> VALID
     end
-
     subgraph Service[业务层]
-        VALID --> SVC[UserService<br/>⚙️ findUsers()/saveUser()<br/>📁 service/impl/UserServiceImpl.java:78]
-        SVC --> CACHE[缓存检查<br/>⚙️ RedisService.get()<br/>📁 service/RedisService.java:89]
+        SVC["UserService<br>findUsers()/saveUser()<br>service/impl/UserServiceImpl.java:78"]
+        CACHE["缓存检查<br>RedisService.get()<br>service/RedisService.java:89"]
+        SVC --> CACHE
     end
-
     subgraph Data[数据层]
-        CACHE --> REPO[UserRepository<br/>⚙️ findByStatus()/save()<br/>📁 repository/UserRepository.java:112]
-        REPO --> DB[(MySQL<br/>⚙️ SELECT/INSERT<br/>📁 mapper/UserMapper.xml:45)]
-        REPO --> MQ[消息队列<br/>⚙️ KafkaProducer.send()<br/>📁 mq/KafkaProducer.java:56)]
+        REPO["UserRepository<br>findByStatus()/save()<br>repository/UserRepository.java:112"]
+        DB["(MySQL<br>SELECT/INSERT<br>mapper/UserMapper.xml:45)"]
+        MQ["消息队列<br>KafkaProducer.send()<br>mq/KafkaProducer.java:56)"]
+        REPO --> DB
+        REPO --> MQ
+    end
+    subgraph External[外部服务]
+        CONSUMER["Kafka Consumer<br>UserEventListener.onMessage()<br>mq/UserEventListener.java:78"]
     end
 
-    subgraph External[外部服务]
-        MQ --> CONSUMER[Kafka Consumer<br/>⚙️ UserEventListener.onMessage()<br/>📁 mq/UserEventListener.java:78]
-    end
+
+INTERCEPTOR --> CTRL
+
+
+VALID --> SVC
+
+
+CACHE --> REPO
+
+
+MQ --> CONSUMER
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -244,30 +256,30 @@ sequenceDiagram
     participant MQ as KafkaProducer
 
     Client->>Filter: POST /api/orders
-    Note right of Filter: 📁 config/SecurityConfig.java:45<br/>JWT Token 校验
+    Note right of Filter:  config/SecurityConfig.java:45<br>JWT Token 校验
     Filter->>Ctrl: createOrder(OrderDTO)
-    Note right of Ctrl: 📁 controller/OrderController.java:34
+    Note right of Ctrl:  controller/OrderController.java:34
     Ctrl->>Svc: createOrder(orderDTO)
-    Note right of Svc: 📁 service/impl/OrderServiceImpl.java:56
+    Note right of Svc:  service/impl/OrderServiceImpl.java:56
     Svc->>Validate: validate(orderDTO)
-    Note right of Validate: 📁 service/OrderValidator.java:23
+    Note right of Validate:  service/OrderValidator.java:23
     Validate-->>Svc: ValidationResult
     Svc->>UserSvc: getUserById(userId)
-    Note right of UserSvc: 📁 service/impl/UserServiceImpl.java:45
+    Note right of UserSvc:  service/impl/UserServiceImpl.java:45
     UserSvc->>Cache: get('user:123')
-    Note right of Cache: 📁 service/RedisService.java:34
+    Note right of Cache:  service/RedisService.java:34
     Cache-->>UserSvc: cachedUser (hit/miss)
     UserSvc-->>Svc: User
     Svc->>Repo: save(orderEntity)
-    Note right of Repo: 📁 repository/OrderRepository.java:78
+    Note right of Repo:  repository/OrderRepository.java:78
     Repo->>DB: INSERT INTO orders
-    Note right of DB: 📁 MyBatis/JPA auto-generated
+    Note right of DB:  MyBatis/JPA auto-generated
     DB-->>Repo: orderId
     Repo-->>Svc: Order(saved)
     Svc->>MQ: send('order-created', event)
-    Note right of MQ: 📁 mq/KafkaProducer.java:56<br/>异步通知
+    Note right of MQ:  mq/KafkaProducer.java:56<br>异步通知
     Svc-->>Ctrl: OrderVO
-    Note left of Svc: 📁 service/impl/OrderServiceImpl.java:89<br/>Entity→VO 转换
+    Note left of Svc:  service/impl/OrderServiceImpl.java:89<br>Entity→VO 转换
     Ctrl-->>Client: ApiResponse<OrderVO>
 ```
 
@@ -323,21 +335,21 @@ sequenceDiagram
     participant DB as MySQL
 
     Client->>Ctrl: GET /api/orders/{id}
-    Note right of Ctrl: 📁 controller/OrderController.java:56
+    Note right of Ctrl:  controller/OrderController.java:56
     Ctrl->>Svc: getOrderById(orderId)
-    Note right of Svc: 📁 service/impl/OrderServiceImpl.java:89
+    Note right of Svc:  service/impl/OrderServiceImpl.java:89
     Svc->>Cache: get('order:123')
-    Note right of Cache: 📁 service/RedisService.java:34
+    Note right of Cache:  service/RedisService.java:34
     Cache-->>Svc: cachedOrder (hit/miss)
     Svc->>Repo: findById(orderId)
-    Note right of Repo: 📁 repository/OrderRepository.java:45
+    Note right of Repo:  repository/OrderRepository.java:45
     Repo->>DB: SELECT * FROM orders WHERE id = ?
-    Note right of DB: 📁 JPA auto-generated SQL
+    Note right of DB:  JPA auto-generated SQL
     DB-->>Repo: orderRow
     Repo-->>Svc: Optional<Order>
     Svc->>Cache: set('order:123', order, TTL)
     Svc-->>Ctrl: OrderVO
-    Note left of Svc: 📁 service/impl/OrderServiceImpl.java:112<br/>cache-aside pattern
+    Note left of Svc:  service/impl/OrderServiceImpl.java:112<br>cache-aside pattern
     Ctrl-->>Client: ApiResponse<OrderVO>
 ```
 
@@ -376,39 +388,40 @@ public OrderVO getOrderById(Long orderId) {
 ```mermaid
 flowchart TB
     subgraph Presentation[表现层]
-        ORDER_CTRL["OrderController<br/>⚙️ createOrder()/getOrderById()<br/>📁 controller/OrderController.java:34"]
+        ORDER_CTRL["OrderController<br>createOrder()/getOrderById()<br>controller/OrderController.java:34"]
     end
-
     subgraph Business[业务层]
-        ORDER_SVC["OrderServiceImpl<br/>⚙️ createOrder()/getOrderById()<br/>📁 service/impl/OrderServiceImpl.java:56"]
-        ORDER_VALIDATOR["OrderValidator<br/>⚙️ validate()<br/>📁 service/OrderValidator.java:23"]
-        USER_SVC["UserService<br/>⚙️ getUserById()<br/>📁 service/impl/UserServiceImpl.java:45"]
+        ORDER_SVC["OrderServiceImpl<br>createOrder()/getOrderById()<br>service/impl/OrderServiceImpl.java:56"]
+        ORDER_VALIDATOR["OrderValidator<br>validate()<br>service/OrderValidator.java:23"]
+        USER_SVC["UserService<br>getUserById()<br>service/impl/UserServiceImpl.java:45"]
     end
-
     subgraph Data[数据层]
-        ORDER_REPO["OrderRepository<br/>⚙️ save()/findById()<br/>📁 repository/OrderRepository.java:78"]
-        USER_REPO["UserRepository<br/>⚙️ findById()<br/>📁 repository/UserRepository.java:112"]
-        REDIS["RedisService<br/>⚙️ get()/set()<br/>📁 service/RedisService.java:34"]
+        ORDER_REPO["OrderRepository<br>save()/findById()<br>repository/OrderRepository.java:78"]
+        USER_REPO["UserRepository<br>findById()<br>repository/UserRepository.java:112"]
+        REDIS["RedisService<br>get()/set()<br>service/RedisService.java:34"]
     end
-
     subgraph Infrastructure[基础设施层]
-        DB["MySQL<br/>⚙️ JPA/Hibernate<br/>📁 JPA auto-generated"]
-        MQ["Kafka<br/>⚙️ send()/consume()<br/>📁 mq/KafkaProducer.java:56"]
+        DB["MySQL<br>JPA/Hibernate<br>JPA auto-generated"]
+        MQ["Kafka<br>send()/consume()<br>mq/KafkaProducer.java:56"]
     end
 
-    ORDER_CTRL --> ORDER_SVC
-    ORDER_SVC --> ORDER_VALIDATOR
-    ORDER_SVC --> USER_SVC
-    ORDER_SVC --> ORDER_REPO
-    USER_SVC --> REDIS
-    USER_SVC --> USER_REPO
-    ORDER_REPO --> DB
-    ORDER_SVC --> MQ
 
-    style ORDER_CTRL fill:#e1f5fe
-    style ORDER_SVC fill:#fff3e0
-    style ORDER_REPO fill:#e8f5e9
-    style DB fill:#fce4ec
+
+
+
+ORDER_CTRL --> ORDER_SVC
+ORDER_SVC --> ORDER_VALIDATOR
+ORDER_SVC --> USER_SVC
+ORDER_SVC --> ORDER_REPO
+USER_SVC --> REDIS
+USER_SVC --> USER_REPO
+ORDER_REPO --> DB
+ORDER_SVC --> MQ
+
+style ORDER_CTRL fill:#e1f5fe
+style ORDER_SVC fill:#fff3e0
+style ORDER_REPO fill:#e8f5e9
+style DB fill:#fce4ec
 ```
 
 **步骤与API详解**：

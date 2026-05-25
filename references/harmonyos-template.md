@@ -291,35 +291,50 @@ async function getToken(): Promise<string | undefined> {
 ```mermaid
 flowchart TB
     subgraph App[应用启动]
-        LAUNCH[启动App<br/>⚙️ EntryAbility.onCreate()<br/>📁 products/phone/ets/entryability/EntryAbility.ets:23]
-        INIT[初始化模块<br/>⚙️ GlobalContext.init()<br/>📁 common/src/main/ets/utils/GlobalContext.ets:45]
-        LOAD[加载用户数据<br/>⚙️ UserRepo.getCurrentUser()<br/>📁 common/src/main/ets/repository/UserRepo.ets:67]
+        LAUNCH["启动App<br>EntryAbility.onCreate()<br>products/phone/ets/entryability/EntryAbility.ets:23"]
+        INIT["初始化模块<br>GlobalContext.init()<br>common/src/main/ets/utils/GlobalContext.ets:45"]
+        LOAD["加载用户数据<br>UserRepo.getCurrentUser()<br>common/src/main/ets/repository/UserRepo.ets:67"]
         LAUNCH --> INIT
         INIT --> LOAD
     end
-
     subgraph HomeFlow[首页流程]
-        LOAD --> HOME[展示首页<br/>⚙️ MainPage.build()<br/>📁 products/phone/ets/pages/MainPage.ets:34]
-        HOME --> FEED[内容推荐<br/>⚙️ FeedVM.loadFeeds()<br/>📁 features/feed/ets/viewmodel/FeedVM.ets:56]
-        HOME --> SEARCH[搜索<br/>⚙️ SearchVM.search()<br/>📁 features/search/ets/viewmodel/SearchVM.ets:45]
+        HOME["展示首页<br>MainPage.build()<br>products/phone/ets/pages/MainPage.ets:34"]
+        FEED["内容推荐<br>FeedVM.loadFeeds()<br>features/feed/ets/viewmodel/FeedVM.ets:56"]
+        SEARCH["搜索<br>SearchVM.search()<br>features/search/ets/viewmodel/SearchVM.ets:45"]
+        HOME --> FEED
+        HOME --> SEARCH
     end
-
     subgraph FeatureFlow[功能流程]
-        FEED --> DETAIL[内容详情<br/>⚙️ DetailPage.build()<br/>📁 features/feed/ets/pages/DetailPage.ets:78]
-        DETAIL --> BOOKMARK[收藏<br/>⚙️ BookmarkVM.toggle()<br/>📁 features/bookmark/ets/viewmodel/BookmarkVM.ets:89]
-        DETAIL --> SHARE[分享<br/>⚙️ ShareUtil.share()<br/>📁 common/src/main/ets/utils/ShareUtil.ets:34]
+        DETAIL["内容详情<br>DetailPage.build()<br>features/feed/ets/pages/DetailPage.ets:78"]
+        BOOKMARK["收藏<br>BookmarkVM.toggle()<br>features/bookmark/ets/viewmodel/BookmarkVM.ets:89"]
+        SHARE["分享<br>ShareUtil.share()<br>common/src/main/ets/utils/ShareUtil.ets:34"]
+        DETAIL --> BOOKMARK
+        DETAIL --> SHARE
     end
-
     subgraph DataFlow[数据流程]
-        BOOKMARK --> REPO[Repository<br/>⚙️ ContentRepo.saveBookmark()<br/>📁 common/src/main/ets/repository/ContentRepo.ets:112]
-        REPO --> LOCAL[(Preferences DB<br/>⚙️ PrefUtil.put()<br/>📁 common/src/main/ets/utils/PrefUtil.ets:45)]
-        REPO --> REMOTE[(Remote API<br/>⚙️ ApiService.post()<br/>📁 common/src/main/ets/network/ApiService.ets:78)]
+        REPO["Repository<br>ContentRepo.saveBookmark()<br>common/src/main/ets/repository/ContentRepo.ets:112"]
+        LOCAL[("Preferences DB<br>PrefUtil.put()<br>common/src/main/ets/utils/PrefUtil.ets:45)"]
+        REMOTE[("Remote API<br>ApiService.post()<br>common/src/main/ets/network/ApiService.ets:78)"]
+        REPO --> LOCAL
+        REPO --> REMOTE
+    end
+    subgraph Background[后台流程]
+        SYNC["数据同步<br>SyncService.startSync()<br>common/src/main/ets/services/SyncService.ets:56"]
+        NOTIFY["推送通知<br>NotificationService.show()<br>common/src/main/ets/services/NotificationService.ets:34"]
+        SYNC --> NOTIFY
     end
 
-    subgraph Background[后台流程]
-        REPO --> SYNC[数据同步<br/>⚙️ SyncService.startSync()<br/>📁 common/src/main/ets/services/SyncService.ets:56]
-        SYNC --> NOTIFY[推送通知<br/>⚙️ NotificationService.show()<br/>📁 common/src/main/ets/services/NotificationService.ets:34]
-    end
+
+LOAD --> HOME
+
+
+FEED --> DETAIL
+
+
+BOOKMARK --> REPO
+
+
+REPO --> SYNC
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -390,19 +405,19 @@ sequenceDiagram
     participant Remote as ApiService
 
     UI->>VM: loadFeeds()
-    Note right of VM: 📁 features/feed/ets/viewmodel/FeedVM.ets:56
+    Note right of VM:  features/feed/ets/viewmodel/FeedVM.ets:56
     VM->>UC: execute(userId)
-    Note right of UC: 📁 features/feed/ets/usecase/GetRecommendUseCase.ets:23
+    Note right of UC:  features/feed/ets/usecase/GetRecommendUseCase.ets:23
     UC->>Repo: getFeeds(query)
-    Note right of Repo: 📁 common/src/main/ets/repository/ContentRepo.ets:78
+    Note right of Repo:  common/src/main/ets/repository/ContentRepo.ets:78
     Repo->>Local: get('cached_feeds')
-    Note right of Local: 📁 common/src/main/ets/utils/PrefUtil.ets:34
+    Note right of Local:  common/src/main/ets/utils/PrefUtil.ets:34
     Local-->>Repo: localFeeds
     Repo->>Remote: GET /api/feeds?userId=X
-    Note right of Remote: 📁 common/src/main/ets/network/ApiService.ets:90
+    Note right of Remote:  common/src/main/ets/network/ApiService.ets:90
     Remote-->>Repo: remoteFeeds
     Repo-->>UC: mergedList
-    Note left of Repo: 📁 common/src/main/ets/repository/ContentRepo.ets:112<br/>merge local + remote
+    Note left of Repo:  common/src/main/ets/repository/ContentRepo.ets:112<br>merge local + remote
     UC-->>VM: FeedUiState
     VM-->>UI: update @State feeds
 ```
@@ -450,16 +465,16 @@ sequenceDiagram
     participant Remote as ApiService
 
     UI->>VM: search(keyword)
-    Note right of VM: 📁 features/search/ets/viewmodel/SearchVM.ets:45
+    Note right of VM:  features/search/ets/viewmodel/SearchVM.ets:45
     VM->>UC: execute(keyword)
-    Note right of UC: 📁 features/search/ets/usecase/SearchUseCase.ets:23
+    Note right of UC:  features/search/ets/usecase/SearchUseCase.ets:23
     UC->>Repo: searchContent(query)
-    Note right of Repo: 📁 features/search/ets/repository/SearchRepo.ets:56
+    Note right of Repo:  features/search/ets/repository/SearchRepo.ets:56
     Repo->>Local: get('search_history')
-    Note right of Local: 📁 common/src/main/ets/utils/PrefUtil.ets:34
+    Note right of Local:  common/src/main/ets/utils/PrefUtil.ets:34
     Local-->>Repo: historyResults
     Repo->>Remote: GET /api/search?q=keyword
-    Note right of Remote: 📁 common/src/main/ets/network/ApiService.ets:123
+    Note right of Remote:  common/src/main/ets/network/ApiService.ets:123
     Remote-->>Repo: remoteResults
     Repo-->>UC: filteredResults
     UC-->>VM: SearchUiState
@@ -482,35 +497,36 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     subgraph UI[界面层]
-        FEED_PAGE["FeedPage<br/>⚙️ build() @Component<br/>📁 features/feed/ets/pages/FeedPage.ets:34"]
+        FEED_PAGE["FeedPage<br>build() @Component<br>features/feed/ets/pages/FeedPage.ets:34"]
     end
-
     subgraph VM[ViewModel层]
-        FEED_VM["FeedVM<br/>⚙️ loadFeeds()/refresh()<br/>📁 features/feed/ets/viewmodel/FeedVM.ets:56"]
+        FEED_VM["FeedVM<br>loadFeeds()/refresh()<br>features/feed/ets/viewmodel/FeedVM.ets:56"]
     end
-
     subgraph UseCase[业务逻辑层]
-        GET_RECOMMEND["GetRecommendUseCase<br/>⚙️ execute(userId)<br/>📁 features/feed/ets/usecase/GetRecommendUseCase.ets:23"]
-        FILTER_CONTENT["FilterContentUseCase<br/>⚙️ filterByPreference()<br/>📁 features/feed/ets/usecase/FilterContentUseCase.ets:45"]
+        GET_RECOMMEND["GetRecommendUseCase<br>execute(userId)<br>features/feed/ets/usecase/GetRecommendUseCase.ets:23"]
+        FILTER_CONTENT["FilterContentUseCase<br>filterByPreference()<br>features/feed/ets/usecase/FilterContentUseCase.ets:45"]
     end
-
     subgraph Data[数据层]
-        REPO["ContentRepo<br/>⚙️ getFeeds()/saveFeeds()<br/>📁 common/src/main/ets/repository/ContentRepo.ets:78"]
-        LOCAL_DS["Preferences<br/>⚙️ get()/put()/delete()<br/>📁 common/src/main/ets/utils/PrefUtil.ets:34"]
-        REMOTE_DS["ApiService (HttpClient)<br/>⚙️ get()/post()<br/>📁 common/src/main/ets/network/ApiService.ets:90"]
+        REPO["ContentRepo<br>getFeeds()/saveFeeds()<br>common/src/main/ets/repository/ContentRepo.ets:78"]
+        LOCAL_DS["Preferences<br>get()/put()/delete()<br>common/src/main/ets/utils/PrefUtil.ets:34"]
+        REMOTE_DS["ApiService (HttpClient)<br>get()/post()<br>common/src/main/ets/network/ApiService.ets:90"]
     end
 
-    FEED_PAGE --> FEED_VM
-    FEED_VM --> GET_RECOMMEND
-    GET_RECOMMEND --> FILTER_CONTENT
-    FILTER_CONTENT --> REPO
-    REPO --> LOCAL_DS
-    REPO --> REMOTE_DS
 
-    style FEED_PAGE fill:#e1f5fe
-    style FEED_VM fill:#fff3e0
-    style GET_RECOMMEND fill:#e8f5e9
-    style REPO fill:#fce4ec
+
+
+
+FEED_PAGE --> FEED_VM
+FEED_VM --> GET_RECOMMEND
+GET_RECOMMEND --> FILTER_CONTENT
+FILTER_CONTENT --> REPO
+REPO --> LOCAL_DS
+REPO --> REMOTE_DS
+
+style FEED_PAGE fill:#e1f5fe
+style FEED_VM fill:#fff3e0
+style GET_RECOMMEND fill:#e8f5e9
+style REPO fill:#fce4ec
 ```
 
 **配套时序图**：
@@ -526,13 +542,13 @@ sequenceDiagram
     participant Remote as ApiService
 
     Page->>VM: loadFeeds()
-    Note right of VM: 📁 features/feed/ets/viewmodel/FeedVM.ets:56
+    Note right of VM:  features/feed/ets/viewmodel/FeedVM.ets:56
     VM->>UC: execute(userId)
-    Note right of UC: 📁 features/feed/ets/usecase/GetRecommendUseCase.ets:23
+    Note right of UC:  features/feed/ets/usecase/GetRecommendUseCase.ets:23
     UC->>Filter: filterByPreference(feeds)
-    Note right of Filter: 📁 features/feed/ets/usecase/FilterContentUseCase.ets:45
+    Note right of Filter:  features/feed/ets/usecase/FilterContentUseCase.ets:45
     Filter->>Repo: getFeeds(query)
-    Note right of Repo: 📁 common/src/main/ets/repository/ContentRepo.ets:78
+    Note right of Repo:  common/src/main/ets/repository/ContentRepo.ets:78
     Repo->>Local: get('cached_feeds')
     Repo->>Remote: GET /api/feeds?userId=X
     Local-->>Repo: localFeeds

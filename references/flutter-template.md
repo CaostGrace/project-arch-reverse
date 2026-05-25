@@ -187,35 +187,50 @@ final batteryLevel = await channel.invokeMethod<int>('getBatteryLevel');
 ```mermaid
 flowchart TB
     subgraph App[应用启动]
-        LAUNCH[启动App<br/>⚙️ main() / runApp()<br/>📁 lib/main.dart:12]
-        INIT[初始化模块<br/>⚙️ configureDependencies()<br/>📁 lib/injection/injection.dart:23]
-        LOAD[加载用户数据<br/>⚙️ UserRepo.getCurrentUser()<br/>📁 lib/features/user/data/UserRepo.dart:56]
+        LAUNCH["启动App<br>main() / runApp()<br>lib/main.dart:12"]
+        INIT["初始化模块<br>configureDependencies()<br>lib/injection/injection.dart:23"]
+        LOAD["加载用户数据<br>UserRepo.getCurrentUser()<br>lib/features/user/data/UserRepo.dart:56"]
         LAUNCH --> INIT
         INIT --> LOAD
     end
-
     subgraph HomeFlow[首页流程]
-        LOAD --> HOME[展示首页<br/>⚙️ HomePage.build()<br/>📁 lib/features/home/presentation/HomePage.dart:34]
-        HOME --> FEED[内容流<br/>⚙️ FeedBloc.loadFeeds()<br/>📁 lib/features/feed/presentation/FeedBloc.dart:45]
-        HOME --> SEARCH[搜索<br/>⚙️ SearchBloc.search()<br/>📁 lib/features/search/presentation/SearchBloc.dart:56]
+        HOME["展示首页<br>HomePage.build()<br>lib/features/home/presentation/HomePage.dart:34"]
+        FEED["内容流<br>FeedBloc.loadFeeds()<br>lib/features/feed/presentation/FeedBloc.dart:45"]
+        SEARCH["搜索<br>SearchBloc.search()<br>lib/features/search/presentation/SearchBloc.dart:56"]
+        HOME --> FEED
+        HOME --> SEARCH
     end
-
     subgraph FeatureFlow[功能流程]
-        FEED --> DETAIL[内容详情<br/>⚙️ DetailPage.build()<br/>📁 lib/features/detail/presentation/DetailPage.dart:67]
-        DETAIL --> BOOKMARK[收藏<br/>⚙️ BookmarkBloc.toggle()<br/>📁 lib/features/bookmark/presentation/BookmarkBloc.dart:78]
-        DETAIL --> SHARE[分享<br/>⚙️ ShareUtil.share()<br/>📁 lib/core/utils/ShareUtil.dart:34]
+        DETAIL["内容详情<br>DetailPage.build()<br>lib/features/detail/presentation/DetailPage.dart:67"]
+        BOOKMARK["收藏<br>BookmarkBloc.toggle()<br>lib/features/bookmark/presentation/BookmarkBloc.dart:78"]
+        SHARE["分享<br>ShareUtil.share()<br>lib/core/utils/ShareUtil.dart:34"]
+        DETAIL --> BOOKMARK
+        DETAIL --> SHARE
     end
-
     subgraph DataFlow[数据流程]
-        BOOKMARK --> REPO[Repository<br/>⚙️ ContentRepo.saveBookmark()<br/>📁 lib/features/content/data/ContentRepo.dart:89]
-        REPO --> LOCAL[(本地存储<br/>⚙️ LocalDS.insert()<br/>📁 lib/core/data/local/LocalDS.dart:45)]
-        REPO --> REMOTE[(远程API<br/>⚙️ ApiClient.post()<br/>📁 lib/core/network/ApiClient.dart:112)]
+        REPO["Repository<br>ContentRepo.saveBookmark()<br>lib/features/content/data/ContentRepo.dart:89"]
+        LOCAL[("本地存储<br>LocalDS.insert()<br>lib/core/data/local/LocalDS.dart:45)"]
+        REMOTE[("远程API<br>ApiClient.post()<br>lib/core/network/ApiClient.dart:112)"]
+        REPO --> LOCAL
+        REPO --> REMOTE
+    end
+    subgraph Background[后台流程]
+        SYNC["数据同步<br>SyncService.sync()<br>lib/core/services/SyncService.dart:56"]
+        NOTIFY["本地通知<br>NotificationService.show()<br>lib/core/services/NotificationService.dart:34"]
+        SYNC --> NOTIFY
     end
 
-    subgraph Background[后台流程]
-        REPO --> SYNC[数据同步<br/>⚙️ SyncService.sync()<br/>📁 lib/core/services/SyncService.dart:56]
-        SYNC --> NOTIFY[本地通知<br/>⚙️ NotificationService.show()<br/>📁 lib/core/services/NotificationService.dart:34]
-    end
+
+LOAD --> HOME
+
+
+FEED --> DETAIL
+
+
+BOOKMARK --> REPO
+
+
+REPO --> SYNC
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -289,24 +304,24 @@ sequenceDiagram
     participant Remote as ApiClient
 
     UI->>Bloc: add(LoadFeeds())
-    Note right of Bloc: 📁 lib/features/feed/presentation/FeedBloc.dart:45
+    Note right of Bloc:  lib/features/feed/presentation/FeedBloc.dart:45
     Bloc->>UC_Get: execute(userId)
-    Note right of UC_Get: 📁 lib/domain/usecases/GetRecommendUseCase.dart:23
+    Note right of UC_Get:  lib/domain/usecases/GetRecommendUseCase.dart:23
     UC_Get->>UC_Filter: filterByPreference(feeds)
-    Note right of UC_Filter: 📁 lib/domain/usecases/FilterContentUseCase.dart:45
+    Note right of UC_Filter:  lib/domain/usecases/FilterContentUseCase.dart:45
     UC_Filter->>Repo: getFeeds(query)
-    Note right of Repo: 📁 lib/features/content/data/ContentRepo.dart:78
+    Note right of Repo:  lib/features/content/data/ContentRepo.dart:78
     Repo->>Local: queryFeeds()
-    Note right of Local: 📁 lib/core/data/local/LocalDS.dart:34
+    Note right of Local:  lib/core/data/local/LocalDS.dart:34
     Local-->>Repo: localFeeds
     Repo->>Remote: GET /feeds?userId=X
-    Note right of Remote: 📁 lib/core/network/ApiClient.dart:90
+    Note right of Remote:  lib/core/network/ApiClient.dart:90
     Remote-->>Repo: remoteFeeds
     Repo-->>UC_Filter: mergedList
-    Note left of Repo: 📁 lib/features/content/data/ContentRepo.dart:112<br/>merge local + remote
+    Note left of Repo:  lib/features/content/data/ContentRepo.dart:112<br>merge local + remote
     UC_Filter-->>UC_Get: filteredList
     UC_Get-->>Bloc: FeedLoaded State
-    Note left of UC_Get: 📁 lib/domain/usecases/GetRecommendUseCase.dart:67<br/>map to entity
+    Note left of UC_Get:  lib/domain/usecases/GetRecommendUseCase.dart:67<br>map to entity
     Bloc-->>UI: emit + BlocBuilder rebuild
 ```
 
@@ -356,19 +371,19 @@ sequenceDiagram
     participant Remote as ApiClient
 
     UI->>Bloc: add(Search(keyword))
-    Note right of Bloc: 📁 lib/features/search/presentation/SearchBloc.dart:45
+    Note right of Bloc:  lib/features/search/presentation/SearchBloc.dart:45
     Bloc->>UC: execute(keyword)
-    Note right of UC: 📁 lib/domain/usecases/SearchUseCase.dart:23
+    Note right of UC:  lib/domain/usecases/SearchUseCase.dart:23
     UC->>Repo: searchContent(query)
-    Note right of Repo: 📁 lib/features/search/data/SearchRepo.dart:56
+    Note right of Repo:  lib/features/search/data/SearchRepo.dart:56
     Repo->>Local: queryLocal(keyword)
-    Note right of Local: 📁 lib/core/data/local/LocalDS.dart:34
+    Note right of Local:  lib/core/data/local/LocalDS.dart:34
     Local-->>Repo: localResults
     Repo->>Remote: GET /search?q=keyword
-    Note right of Remote: 📁 lib/core/network/ApiClient.dart:123
+    Note right of Remote:  lib/core/network/ApiClient.dart:123
     Remote-->>Repo: remoteResults
     Repo-->>UC: mergedResults
-    Note left of Repo: 📁 lib/features/search/data/SearchRepo.dart:89<br/>deduplicate & merge
+    Note left of Repo:  lib/features/search/data/SearchRepo.dart:89<br>deduplicate & merge
     UC-->>Bloc: SearchState
     Bloc-->>UI: emit + BlocBuilder rebuild
 ```
@@ -408,35 +423,36 @@ class SearchRepoImpl implements SearchRepo {
 ```mermaid
 flowchart TB
     subgraph UI[界面层]
-        FEED_PAGE["FeedPage<br/>⚙️ FeedPage(BlocProvider)<br/>📁 lib/features/feed/presentation/FeedPage.dart:34"]
+        FEED_PAGE["FeedPage<br>FeedPage(BlocProvider)<br>lib/features/feed/presentation/FeedPage.dart:34"]
     end
-
     subgraph Bloc[Bloc层]
-        FEED_BLOC["FeedBloc<br/>⚙️ on<LoadFeeds>()/on<Refresh>()<br/>📁 lib/features/feed/presentation/FeedBloc.dart:45"]
+        FEED_BLOC["FeedBloc<br>on<LoadFeeds>()/on<Refresh>()<br>lib/features/feed/presentation/FeedBloc.dart:45"]
     end
-
     subgraph UseCase[业务逻辑层]
-        GET_RECOMMEND["GetRecommendUseCase<br/>⚙️ execute(userId)<br/>📁 lib/domain/usecases/GetRecommendUseCase.dart:23"]
-        FILTER_CONTENT["FilterContentUseCase<br/>⚙️ filterByPreference()<br/>📁 lib/domain/usecases/FilterContentUseCase.dart:45"]
+        GET_RECOMMEND["GetRecommendUseCase<br>execute(userId)<br>lib/domain/usecases/GetRecommendUseCase.dart:23"]
+        FILTER_CONTENT["FilterContentUseCase<br>filterByPreference()<br>lib/domain/usecases/FilterContentUseCase.dart:45"]
     end
-
     subgraph Data[数据层]
-        REPO["ContentRepoImpl<br/>⚙️ getFeeds()/saveFeeds()<br/>📁 lib/features/content/data/ContentRepo.dart:78"]
-        LOCAL_DS["LocalDS (SQFlite)<br/>⚙️ query()/insert()<br/>📁 lib/core/data/local/LocalDS.dart:34"]
-        REMOTE_DS["ApiClient (Dio)<br/>⚙️ get()/post()<br/>📁 lib/core/network/ApiClient.dart:90"]
+        REPO["ContentRepoImpl<br>getFeeds()/saveFeeds()<br>lib/features/content/data/ContentRepo.dart:78"]
+        LOCAL_DS["LocalDS (SQFlite)<br>query()/insert()<br>lib/core/data/local/LocalDS.dart:34"]
+        REMOTE_DS["ApiClient (Dio)<br>get()/post()<br>lib/core/network/ApiClient.dart:90"]
     end
 
-    FEED_PAGE --> FEED_BLOC
-    FEED_BLOC --> GET_RECOMMEND
-    GET_RECOMMEND --> FILTER_CONTENT
-    FILTER_CONTENT --> REPO
-    REPO --> LOCAL_DS
-    REPO --> REMOTE_DS
 
-    style FEED_PAGE fill:#e1f5fe
-    style FEED_BLOC fill:#fff3e0
-    style GET_RECOMMEND fill:#e8f5e9
-    style REPO fill:#fce4ec
+
+
+
+FEED_PAGE --> FEED_BLOC
+FEED_BLOC --> GET_RECOMMEND
+GET_RECOMMEND --> FILTER_CONTENT
+FILTER_CONTENT --> REPO
+REPO --> LOCAL_DS
+REPO --> REMOTE_DS
+
+style FEED_PAGE fill:#e1f5fe
+style FEED_BLOC fill:#fff3e0
+style GET_RECOMMEND fill:#e8f5e9
+style REPO fill:#fce4ec
 ```
 
 **配套时序图**：
@@ -452,17 +468,17 @@ sequenceDiagram
     participant Remote as ApiClient
 
     Page->>Bloc: add(LoadFeeds())
-    Note right of Bloc: 📁 lib/features/feed/presentation/FeedBloc.dart:45
+    Note right of Bloc:  lib/features/feed/presentation/FeedBloc.dart:45
     Bloc->>UC: execute(userId)
-    Note right of UC: 📁 lib/domain/usecases/GetRecommendUseCase.dart:23
+    Note right of UC:  lib/domain/usecases/GetRecommendUseCase.dart:23
     UC->>Filter: filterByPreference(feeds)
-    Note right of Filter: 📁 lib/domain/usecases/FilterContentUseCase.dart:45
+    Note right of Filter:  lib/domain/usecases/FilterContentUseCase.dart:45
     Filter->>Repo: getFeeds(query)
-    Note right of Repo: 📁 lib/features/content/data/ContentRepo.dart:78
+    Note right of Repo:  lib/features/content/data/ContentRepo.dart:78
     Repo->>Local: queryFeeds()
-    Note right of Local: 📁 lib/core/data/local/LocalDS.dart:34
+    Note right of Local:  lib/core/data/local/LocalDS.dart:34
     Repo->>Remote: GET /feeds?userId=X
-    Note right of Remote: 📁 lib/core/network/ApiClient.dart:90
+    Note right of Remote:  lib/core/network/ApiClient.dart:90
     Local-->>Repo: localFeeds
     Remote-->>Repo: remoteFeeds
     Repo-->>Filter: mergedList

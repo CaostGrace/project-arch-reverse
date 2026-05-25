@@ -143,34 +143,48 @@ export const userService = {
 ```mermaid
 flowchart TB
     subgraph App[应用启动]
-        LAUNCH[应用初始化<br/>⚙️ createApp()<br/>📁 src/main.ts:12]
-        INIT[插件注册<br/>⚙️ app.use(router).use(pinia)<br/>📁 src/main.ts:16]
-        LOAD[加载用户数据<br/>⚙️ useUserStore().fetchUser()<br/>📁 src/stores/userStore.ts:45]
+        LAUNCH["应用初始化<br>createApp()<br>src/main.ts:12"]
+        INIT["插件注册<br>app.use(router).use(pinia)<br>src/main.ts:16"]
+        LOAD["加载用户数据<br>useUserStore().fetchUser()<br>src/stores/userStore.ts:45"]
         LAUNCH --> INIT
         INIT --> LOAD
     end
-
     subgraph HomeFlow[首页流程]
-        LOAD --> HOME[首页渲染<br/>⚙️ HomePage.vue mounted()<br/>📁 src/pages/HomePage.vue:34]
-        HOME --> FEED[内容列表<br/>⚙️ FeedList.vue fetchFeeds()<br/>📁 src/components/feed/FeedList.vue:56]
-        HOME --> SEARCH[搜索<br/>⚙️ SearchBar.vue onSearch()<br/>📁 src/components/search/SearchBar.vue:45]
+        HOME["首页渲染<br>HomePage.vue mounted()<br>src/pages/HomePage.vue:34"]
+        FEED["内容列表<br>FeedList.vue fetchFeeds()<br>src/components/feed/FeedList.vue:56"]
+        SEARCH["搜索<br>SearchBar.vue onSearch()<br>src/components/search/SearchBar.vue:45"]
+        HOME --> FEED
+        HOME --> SEARCH
     end
-
     subgraph FeatureFlow[功能流程]
-        FEED --> DETAIL[内容详情<br/>⚙️ DetailPage.vue setup()<br/>📁 src/pages/DetailPage.vue:67]
-        DETAIL --> BOOKMARK[收藏<br/>⚙️ BookmarkBtn.vue toggle()<br/>📁 src/components/bookmark/BookmarkBtn.vue:78]
-        DETAIL --> SHARE[分享<br/>⚙️ useShare().share()<br/>📁 src/composables/useShare.ts:34]
+        DETAIL["内容详情<br>DetailPage.vue setup()<br>src/pages/DetailPage.vue:67"]
+        BOOKMARK["收藏<br>BookmarkBtn.vue toggle()<br>src/components/bookmark/BookmarkBtn.vue:78"]
+        SHARE["分享<br>useShare().share()<br>src/composables/useShare.ts:34"]
+        DETAIL --> BOOKMARK
+        DETAIL --> SHARE
     end
-
     subgraph DataFlow[数据流程]
-        BOOKMARK --> COMPOSABLE[Composable<br/>⚙️ useBookmark().toggle()<br/>📁 src/composables/useBookmark.ts:23]
-        COMPOSABLE --> SERVICE[API Service<br/>⚙️ bookmarkService.toggle()<br/>📁 src/services/bookmarkService.ts:34]
-        SERVICE --> API[Axios<br/>⚙️ POST /api/bookmarks<br/>📁 src/utils/http.ts:56]
+        COMPOSABLE["Composable<br>useBookmark().toggle()<br>src/composables/useBookmark.ts:23"]
+        SERVICE["API Service<br>bookmarkService.toggle()<br>src/services/bookmarkService.ts:34"]
+        API["Axios<br>POST /api/bookmarks<br>src/utils/http.ts:56"]
+        COMPOSABLE --> SERVICE
+        SERVICE --> API
+    end
+    subgraph State[状态管理]
+        STORE["Pinia Store<br>useBookmarkStore()<br>src/stores/bookmarkStore.ts:45"]
     end
 
-    subgraph State[状态管理]
-        COMPOSABLE --> STORE[Pinia Store<br/>⚙️ useBookmarkStore()<br/>📁 src/stores/bookmarkStore.ts:45]
-    end
+
+LOAD --> HOME
+
+
+FEED --> DETAIL
+
+
+BOOKMARK --> COMPOSABLE
+
+
+COMPOSABLE --> STORE
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -279,19 +293,19 @@ sequenceDiagram
     participant Router as Vue Router
 
     UI->>Form: @submit="handleLogin"
-    Note right of Form: 📁 src/components/auth/LoginForm.vue:34
+    Note right of Form:  src/components/auth/LoginForm.vue:34
     Form->>Store: authStore.login(credentials)
-    Note right of Store: 📁 src/stores/authStore.ts:45
+    Note right of Store:  src/stores/authStore.ts:45
     Store->>Service: authService.login(email, password)
-    Note right of Service: 📁 src/services/authService.ts:23
+    Note right of Service:  src/services/authService.ts:23
     Service->>API: POST /api/auth/login
-    Note right of API: 📁 src/utils/http.ts:56
+    Note right of API:  src/utils/http.ts:56
     API->>Backend: HTTP POST { email, password }
     Backend-->>API: { token, user }
     API-->>Service: AuthResponse
     Service-->>Store: token + user
     Store->>Router: router.push('/dashboard')
-    Note right of Router: 📁 Store action: L56
+    Note right of Router:  Store action: L56
     Store-->>Form: success
     Form-->>UI: redirect to dashboard
 ```
@@ -349,21 +363,21 @@ sequenceDiagram
     participant BStore as useBookmarkStore
 
     Page->>Store: feedStore.fetchFeeds()
-    Note right of Store: 📁 src/stores/feedStore.ts:34
+    Note right of Store:  src/stores/feedStore.ts:34
     Store->>Service: feedService.getFeeds({ page })
-    Note right of Service: 📁 src/services/feedService.ts:23
+    Note right of Service:  src/services/feedService.ts:23
     Service->>API: GET /api/feeds?page=1
-    Note right of API: 📁 src/utils/http.ts:45
+    Note right of API:  src/utils/http.ts:45
     API-->>Service: FeedDTO[]
     Service-->>Store: Feed[]
     Store-->>Page: reactive update
 
     Page->>Btn: @click="handleBookmark"
-    Note right of Btn: 📁 src/components/bookmark/BookmarkBtn.vue:78
+    Note right of Btn:  src/components/bookmark/BookmarkBtn.vue:78
     Btn->>Comp: useBookmark().toggle(itemId)
-    Note right of Comp: 📁 src/composables/useBookmark.ts:23
+    Note right of Comp:  src/composables/useBookmark.ts:23
     Comp->>BStore: bookmarkStore.toggleBookmark(itemId)
-    Note right of BStore: 📁 src/stores/bookmarkStore.ts:45
+    Note right of BStore:  src/stores/bookmarkStore.ts:45
     BStore->>Service: bookmarkService.toggle(itemId)
     BStore->>API: POST /api/bookmarks { itemId }
     API-->>BStore: BookmarkResult
@@ -390,48 +404,49 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     subgraph Page[页面层]
-        FEED_PAGE["FeedPage.vue<br/>⚙️ setup() + onMounted()<br/>📁 src/pages/FeedPage.vue:34"]
+        FEED_PAGE["FeedPage.vue<br>setup() + onMounted()<br>src/pages/FeedPage.vue:34"]
     end
-
     subgraph Component[组件层]
-        FEED_LIST["FeedList.vue<br/>⚙️ FeedList({items, loading})<br/>📁 src/components/feed/FeedList.vue:56"]
-        BOOKMARK_BTN["BookmarkBtn.vue<br/>⚙️ BookmarkBtn({itemId})<br/>📁 src/components/bookmark/BookmarkBtn.vue:78"]
+        FEED_LIST["FeedList.vue<br>FeedList({items, loading})<br>src/components/feed/FeedList.vue:56"]
+        BOOKMARK_BTN["BookmarkBtn.vue<br>BookmarkBtn({itemId})<br>src/components/bookmark/BookmarkBtn.vue:78"]
     end
-
     subgraph Composable[Composable层]
-        USE_FEED["useFeedList<br/>⚙️ fetchFeeds()/refresh()<br/>📁 src/composables/useFeedList.ts:23"]
-        USE_BOOKMARK["useBookmark<br/>⚙️ toggle()/isBookmarked()<br/>📁 src/composables/useBookmark.ts:23"]
+        USE_FEED["useFeedList<br>fetchFeeds()/refresh()<br>src/composables/useFeedList.ts:23"]
+        USE_BOOKMARK["useBookmark<br>toggle()/isBookmarked()<br>src/composables/useBookmark.ts:23"]
     end
-
     subgraph Store[状态管理层]
-        FEED_STORE["useFeedStore<br/>⚙️ fetchFeeds()/feeds<br/>📁 src/stores/feedStore.ts:34"]
-        BOOKMARK_STORE["useBookmarkStore<br/>⚙️ toggleBookmark()/items<br/>📁 src/stores/bookmarkStore.ts:45"]
+        FEED_STORE["useFeedStore<br>fetchFeeds()/feeds<br>src/stores/feedStore.ts:34"]
+        BOOKMARK_STORE["useBookmarkStore<br>toggleBookmark()/items<br>src/stores/bookmarkStore.ts:45"]
     end
-
     subgraph Service[服务层]
-        FEED_SVC["feedService<br/>⚙️ getFeeds()/getFeedById()<br/>📁 src/services/feedService.ts:23"]
-        BOOKMARK_SVC["bookmarkService<br/>⚙️ toggle()/getBookmarks()<br/>📁 src/services/bookmarkService.ts:34"]
+        FEED_SVC["feedService<br>getFeeds()/getFeedById()<br>src/services/feedService.ts:23"]
+        BOOKMARK_SVC["bookmarkService<br>toggle()/getBookmarks()<br>src/services/bookmarkService.ts:34"]
     end
-
     subgraph HTTP[网络层]
-        HTTP_CLIENT["http (Axios)<br/>⚙️ get()/post()<br/>📁 src/utils/http.ts:56"]
+        HTTP_CLIENT["http (Axios)<br>get()/post()<br>src/utils/http.ts:56"]
     end
 
-    FEED_PAGE --> FEED_LIST
-    FEED_LIST --> USE_FEED
-    FEED_LIST --> BOOKMARK_BTN
-    BOOKMARK_BTN --> USE_BOOKMARK
-    USE_FEED --> FEED_STORE
-    USE_BOOKMARK --> BOOKMARK_STORE
-    FEED_STORE --> FEED_SVC
-    BOOKMARK_STORE --> BOOKMARK_SVC
-    FEED_SVC --> HTTP_CLIENT
-    BOOKMARK_SVC --> HTTP_CLIENT
 
-    style FEED_PAGE fill:#e1f5fe
-    style FEED_LIST fill:#fff3e0
-    style USE_FEED fill:#e8f5e9
-    style HTTP_CLIENT fill:#fce4ec
+
+
+
+
+
+FEED_PAGE --> FEED_LIST
+FEED_LIST --> USE_FEED
+FEED_LIST --> BOOKMARK_BTN
+BOOKMARK_BTN --> USE_BOOKMARK
+USE_FEED --> FEED_STORE
+USE_BOOKMARK --> BOOKMARK_STORE
+FEED_STORE --> FEED_SVC
+BOOKMARK_STORE --> BOOKMARK_SVC
+FEED_SVC --> HTTP_CLIENT
+BOOKMARK_SVC --> HTTP_CLIENT
+
+style FEED_PAGE fill:#e1f5fe
+style FEED_LIST fill:#fff3e0
+style USE_FEED fill:#e8f5e9
+style HTTP_CLIENT fill:#fce4ec
 ```
 
 **步骤与API详解**：

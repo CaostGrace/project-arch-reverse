@@ -209,32 +209,44 @@ const httpRequestDuration = new Histogram({
 ```mermaid
 flowchart TB
     subgraph Request[请求入口]
-        CLIENT[客户端请求<br/>⚙️ HTTP Request → main.ts<br/>📁 src/main.ts:12]
-        GUARD[守卫<br/>⚙️ AuthGuard.canActivate()<br/>📁 src/shared/guards/AuthGuard.ts:23]
-        INTERCEPTOR[拦截器<br/>⚙️ LogInterceptor.intercept()<br/>📁 src/shared/interceptors/LogInterceptor.ts:34]
+        CLIENT["客户端请求<br>HTTP Request → main.ts<br>src/main.ts:12"]
+        GUARD["守卫<br>AuthGuard.canActivate()<br>src/shared/guards/AuthGuard.ts:23"]
+        INTERCEPTOR["拦截器<br>LogInterceptor.intercept()<br>src/shared/interceptors/LogInterceptor.ts:34"]
         CLIENT --> GUARD
         GUARD --> INTERCEPTOR
     end
-
     subgraph Controller[控制层]
-        INTERCEPTOR --> CTRL[UserController<br/>⚙️ findAll()/create()<br/>📁 src/modules/users/UserController.ts:56]
-        CTRL --> PIPE[参数管道<br/>⚙️ @Body(ValidationPipe)<br/>📁 src/modules/users/dto/CreateUserDTO.ts:23]
+        CTRL["UserController<br>findAll()/create()<br>src/modules/users/UserController.ts:56"]
+        PIPE["参数管道<br>@Body(ValidationPipe)<br>src/modules/users/dto/CreateUserDTO.ts:23"]
+        CTRL --> PIPE
     end
-
     subgraph Service[业务层]
-        PIPE --> SVC[UserService<br/>⚙️ findAll()/create()<br/>📁 src/modules/users/UserService.ts:78]
-        SVC --> CACHE[缓存检查<br/>⚙️ CacheService.get()<br/>📁 src/shared/services/CacheService.ts:89]
+        SVC["UserService<br>findAll()/create()<br>src/modules/users/UserService.ts:78"]
+        CACHE["缓存检查<br>CacheService.get()<br>src/shared/services/CacheService.ts:89"]
+        SVC --> CACHE
     end
-
     subgraph Data[数据层]
-        CACHE --> REPO[UserRepository<br/>⚙️ findMany()/create()<br/>📁 src/modules/users/UserRepository.ts:112]
-        REPO --> DB[(PostgreSQL<br/>⚙️ Prisma ORM<br/>📁 prisma/schema.prisma:45)]
-        REPO --> MQ[消息队列<br/>⚙️ BullQueue.add()<br/>📁 src/shared/queue/UserQueue.ts:56)]
+        REPO["UserRepository<br>findMany()/create()<br>src/modules/users/UserRepository.ts:112"]
+        DB["(PostgreSQL<br>Prisma ORM<br>prisma/schema.prisma:45)"]
+        MQ["消息队列<br>BullQueue.add()<br>src/shared/queue/UserQueue.ts:56)"]
+        REPO --> DB
+        REPO --> MQ
+    end
+    subgraph External[外部服务]
+        CONSUMER["Bull Consumer<br>UserProcessor.handle()<br>src/shared/queue/UserProcessor.ts:78"]
     end
 
-    subgraph External[外部服务]
-        MQ --> CONSUMER[Bull Consumer<br/>⚙️ UserProcessor.handle()<br/>📁 src/shared/queue/UserProcessor.ts:78]
-    end
+
+INTERCEPTOR --> CTRL
+
+
+PIPE --> SVC
+
+
+CACHE --> REPO
+
+
+MQ --> CONSUMER
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -323,30 +335,30 @@ sequenceDiagram
     participant Queue as BullQueue
 
     Client->>Guard: POST /api/orders
-    Note right of Guard: 📁 src/shared/guards/AuthGuard.ts:45<br/>JWT verify
+    Note right of Guard:  src/shared/guards/AuthGuard.ts:45<br>JWT verify
     Guard->>Ctrl: create(OrderDTO)
-    Note right of Ctrl: 📁 src/modules/orders/OrderController.ts:34
+    Note right of Ctrl:  src/modules/orders/OrderController.ts:34
     Ctrl->>Svc: create(orderDTO)
-    Note right of Svc: 📁 src/modules/orders/OrderService.ts:56
+    Note right of Svc:  src/modules/orders/OrderService.ts:56
     Svc->>Validate: validate(orderDTO)
-    Note right of Validate: 📁 src/modules/orders/OrderValidator.ts:23
+    Note right of Validate:  src/modules/orders/OrderValidator.ts:23
     Validate-->>Svc: ValidationResult
     Svc->>UserSvc: findById(userId)
-    Note right of UserSvc: 📁 src/modules/users/UserService.ts:45
+    Note right of UserSvc:  src/modules/users/UserService.ts:45
     UserSvc->>Cache: get('user:123')
-    Note right of Cache: 📁 src/shared/services/CacheService.ts:34
+    Note right of Cache:  src/shared/services/CacheService.ts:34
     Cache-->>UserSvc: cachedUser
     UserSvc-->>Svc: User
     Svc->>Repo: create(orderData)
-    Note right of Repo: 📁 src/modules/orders/OrderRepository.ts:78
+    Note right of Repo:  src/modules/orders/OrderRepository.ts:78
     Repo->>DB: INSERT INTO orders
-    Note right of DB: 📁 prisma/schema.prisma:45
+    Note right of DB:  prisma/schema.prisma:45
     DB-->>Repo: orderRecord
     Repo-->>Svc: Order
     Svc->>Queue: add('order-created', event)
-    Note right of Queue: 📁 src/shared/queue/OrderQueue.ts:56<br/>异步事件通知
+    Note right of Queue:  src/shared/queue/OrderQueue.ts:56<br>异步事件通知
     Svc-->>Ctrl: OrderResponse
-    Note left of Svc: 📁 src/modules/orders/OrderService.ts:89<br/>Prisma→DTO mapping
+    Note left of Svc:  src/modules/orders/OrderService.ts:89<br>Prisma→DTO mapping
     Ctrl-->>Client: ApiResponse<OrderResponse>
 ```
 
@@ -405,21 +417,21 @@ sequenceDiagram
     participant DB as PostgreSQL
 
     Client->>Ctrl: GET /api/orders/:id
-    Note right of Ctrl: 📁 src/modules/orders/OrderController.ts:56
+    Note right of Ctrl:  src/modules/orders/OrderController.ts:56
     Ctrl->>Svc: findById(orderId)
-    Note right of Svc: 📁 src/modules/orders/OrderService.ts:89
+    Note right of Svc:  src/modules/orders/OrderService.ts:89
     Svc->>Cache: get('order:123')
-    Note right of Cache: 📁 src/shared/services/CacheService.ts:34
+    Note right of Cache:  src/shared/services/CacheService.ts:34
     Cache-->>Svc: cachedOrder (hit/miss)
     Svc->>Repo: findById(orderId)
-    Note right of Repo: 📁 src/modules/orders/OrderRepository.ts:45
+    Note right of Repo:  src/modules/orders/OrderRepository.ts:45
     Repo->>DB: SELECT * FROM orders WHERE id = ?
-    Note right of DB: 📁 prisma/schema.prisma:45
+    Note right of DB:  prisma/schema.prisma:45
     DB-->>Repo: orderRecord
     Repo-->>Svc: Order | null
     Svc->>Cache: set('order:123', order, 600)
     Svc-->>Ctrl: OrderResponse
-    Note left of Svc: 📁 src/modules/orders/OrderService.ts:112<br/>cache-aside
+    Note left of Svc:  src/modules/orders/OrderService.ts:112<br>cache-aside
     Ctrl-->>Client: ApiResponse
 ```
 
@@ -446,37 +458,38 @@ async findById(orderId: string): Promise<OrderResponse> {
 ```mermaid
 flowchart TB
     subgraph Presentation[表现层]
-        ORDER_CTRL["OrderController<br/>⚙️ create()/findById()<br/>📁 src/modules/orders/OrderController.ts:34"]
+        ORDER_CTRL["OrderController<br>create()/findById()<br>src/modules/orders/OrderController.ts:34"]
     end
-
     subgraph Business[业务层]
-        ORDER_SVC["OrderService<br/>⚙️ create()/findById()<br/>📁 src/modules/orders/OrderService.ts:56"]
-        ORDER_VALIDATOR["OrderValidator<br/>⚙️ validate()<br/>📁 src/modules/orders/OrderValidator.ts:23"]
-        USER_SVC["UserService<br/>⚙️ findById()<br/>📁 src/modules/users/UserService.ts:45"]
+        ORDER_SVC["OrderService<br>create()/findById()<br>src/modules/orders/OrderService.ts:56"]
+        ORDER_VALIDATOR["OrderValidator<br>validate()<br>src/modules/orders/OrderValidator.ts:23"]
+        USER_SVC["UserService<br>findById()<br>src/modules/users/UserService.ts:45"]
     end
-
     subgraph Data[数据层]
-        ORDER_REPO["OrderRepository<br/>⚙️ create()/findById()<br/>📁 src/modules/orders/OrderRepository.ts:78"]
-        CACHE["CacheService<br/>⚙️ get()/set()<br/>📁 src/shared/services/CacheService.ts:34"]
+        ORDER_REPO["OrderRepository<br>create()/findById()<br>src/modules/orders/OrderRepository.ts:78"]
+        CACHE["CacheService<br>get()/set()<br>src/shared/services/CacheService.ts:34"]
     end
-
     subgraph Infrastructure[基础设施层]
-        DB["PostgreSQL<br/>⚙️ Prisma ORM<br/>📁 prisma/schema.prisma:45"]
-        QUEUE["Bull Queue (Redis)<br/>⚙️ add()/process()<br/>📁 src/shared/queue/OrderQueue.ts:56"]
+        DB["PostgreSQL<br>Prisma ORM<br>prisma/schema.prisma:45"]
+        QUEUE["Bull Queue (Redis)<br>add()/process()<br>src/shared/queue/OrderQueue.ts:56"]
     end
 
-    ORDER_CTRL --> ORDER_SVC
-    ORDER_SVC --> ORDER_VALIDATOR
-    ORDER_SVC --> USER_SVC
-    ORDER_SVC --> ORDER_REPO
-    USER_SVC --> CACHE
-    ORDER_REPO --> DB
-    ORDER_SVC --> QUEUE
 
-    style ORDER_CTRL fill:#e1f5fe
-    style ORDER_SVC fill:#fff3e0
-    style ORDER_REPO fill:#e8f5e9
-    style DB fill:#fce4ec
+
+
+
+ORDER_CTRL --> ORDER_SVC
+ORDER_SVC --> ORDER_VALIDATOR
+ORDER_SVC --> USER_SVC
+ORDER_SVC --> ORDER_REPO
+USER_SVC --> CACHE
+ORDER_REPO --> DB
+ORDER_SVC --> QUEUE
+
+style ORDER_CTRL fill:#e1f5fe
+style ORDER_SVC fill:#fff3e0
+style ORDER_REPO fill:#e8f5e9
+style DB fill:#fce4ec
 ```
 
 **步骤与API详解**：

@@ -108,35 +108,50 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph App[应用启动]
-        LAUNCH[启动App<br/>⚙️ AppDelegate.application()<br/>📁 MyApp/AppDelegate.swift:23]
-        INIT[初始化模块<br/>⚙️ AppContainer.configure()<br/>📁 Core/DI/AppContainer.swift:45]
-        LOAD[加载用户数据<br/>⚙️ UserRepo.getCurrentUser()<br/>📁 Data/UserRepo.swift:67]
+        LAUNCH["启动App<br>AppDelegate.application()<br>MyApp/AppDelegate.swift:23"]
+        INIT["初始化模块<br>AppContainer.configure()<br>Core/DI/AppContainer.swift:45"]
+        LOAD["加载用户数据<br>UserRepo.getCurrentUser()<br>Data/UserRepo.swift:67"]
         LAUNCH --> INIT
         INIT --> LOAD
     end
-
     subgraph HomeFlow[首页流程]
-        LOAD --> HOME[展示首页<br/>⚙️ HomeView.body<br/>📁 Features/Home/HomeView.swift:34]
-        HOME --> FEED[内容推荐<br/>⚙️ FeedVM.loadFeeds()<br/>📁 Features/Feed/FeedVM.swift:56]
-        HOME --> SEARCH[搜索<br/>⚙️ SearchVM.search()<br/>📁 Features/Search/SearchVM.swift:45]
+        HOME["展示首页<br>HomeView.body<br>Features/Home/HomeView.swift:34"]
+        FEED["内容推荐<br>FeedVM.loadFeeds()<br>Features/Feed/FeedVM.swift:56"]
+        SEARCH["搜索<br>SearchVM.search()<br>Features/Search/SearchVM.swift:45"]
+        HOME --> FEED
+        HOME --> SEARCH
     end
-
     subgraph FeatureFlow[功能流程]
-        FEED --> DETAIL[内容详情<br/>⚙️ DetailView.body<br/>📁 Features/Detail/DetailView.swift:78]
-        DETAIL --> BOOKMARK[收藏<br/>⚙️ BookmarkVM.toggle()<br/>📁 Features/Bookmark/BookmarkVM.swift:89]
-        DETAIL --> SHARE[分享<br/>⚙️ ShareService.share()<br/>📁 Core/Services/ShareService.swift:34]
+        DETAIL["内容详情<br>DetailView.body<br>Features/Detail/DetailView.swift:78"]
+        BOOKMARK["收藏<br>BookmarkVM.toggle()<br>Features/Bookmark/BookmarkVM.swift:89"]
+        SHARE["分享<br>ShareService.share()<br>Core/Services/ShareService.swift:34"]
+        DETAIL --> BOOKMARK
+        DETAIL --> SHARE
     end
-
     subgraph DataFlow[数据流程]
-        BOOKMARK --> REPO[Repository<br/>⚙️ ContentRepo.saveBookmark()<br/>📁 Data/ContentRepo.swift:112]
-        REPO --> LOCAL[(Core Data<br/>⚙️ PersistenceController.save()<br/>📁 Data/Local/PersistenceController.swift:45)]
-        REPO --> REMOTE[(Remote API<br/>⚙️ APIClient.request()<br/>📁 Network/APIClient.swift:78)]
+        REPO["Repository<br>ContentRepo.saveBookmark()<br>Data/ContentRepo.swift:112"]
+        LOCAL[("Core Data<br>PersistenceController.save()<br>Data/Local/PersistenceController.swift:45)"]
+        REMOTE[("Remote API<br>APIClient.request()<br>Network/APIClient.swift:78)"]
+        REPO --> LOCAL
+        REPO --> REMOTE
+    end
+    subgraph Background[后台流程]
+        SYNC["数据同步<br>SyncService.sync()<br>Core/Services/SyncService.swift:56"]
+        NOTIFY["推送通知<br>NotificationService.register()<br>Core/Services/NotificationService.swift:34"]
+        SYNC --> NOTIFY
     end
 
-    subgraph Background[后台流程]
-        REPO --> SYNC[数据同步<br/>⚙️ SyncService.sync()<br/>📁 Core/Services/SyncService.swift:56]
-        SYNC --> NOTIFY[推送通知<br/>⚙️ NotificationService.register()<br/>📁 Core/Services/NotificationService.swift:34]
-    end
+
+LOAD --> HOME
+
+
+FEED --> DETAIL
+
+
+BOOKMARK --> REPO
+
+
+REPO --> SYNC
 ```
 
 ##### 12.1.1 业务流程步骤详解 ★
@@ -208,19 +223,19 @@ sequenceDiagram
     participant Remote as APIClient
 
     UI->>VM: loadFeeds()
-    Note right of VM: 📁 Features/Feed/FeedVM.swift:56
+    Note right of VM:  Features/Feed/FeedVM.swift:56
     VM->>UC: execute(userId:)
-    Note right of UC: 📁 Domain/UseCases/GetRecommendUseCase.swift:23
+    Note right of UC:  Domain/UseCases/GetRecommendUseCase.swift:23
     UC->>Repo: getFeeds(query:)
-    Note right of Repo: 📁 Data/ContentRepo.swift:78
+    Note right of Repo:  Data/ContentRepo.swift:78
     Repo->>Local: fetch(FeedEntity.self)
-    Note right of Local: 📁 Data/Local/PersistenceController.swift:34
+    Note right of Local:  Data/Local/PersistenceController.swift:34
     Local-->>Repo: localFeeds
     Repo->>Remote: GET /feeds?userId=X
-    Note right of Remote: 📁 Network/APIClient.swift:90
+    Note right of Remote:  Network/APIClient.swift:90
     Remote-->>Repo: remoteFeeds
     Repo-->>UC: mergedList
-    Note left of Repo: 📁 Data/ContentRepo.swift:112<br/>merge local + remote
+    Note left of Repo:  Data/ContentRepo.swift:112<br>merge local + remote
     UC-->>VM: [Feed]
     VM-->>UI: @Published/Observable update
 ```
@@ -263,16 +278,16 @@ sequenceDiagram
     participant Remote as APIClient
 
     UI->>VM: search(keyword:)
-    Note right of VM: 📁 Features/Search/SearchVM.swift:45
+    Note right of VM:  Features/Search/SearchVM.swift:45
     VM->>UC: execute(keyword:)
-    Note right of UC: 📁 Domain/UseCases/SearchUseCase.swift:23
+    Note right of UC:  Domain/UseCases/SearchUseCase.swift:23
     UC->>Repo: searchContent(query:)
-    Note right of Repo: 📁 Data/SearchRepo.swift:56
+    Note right of Repo:  Data/SearchRepo.swift:56
     Repo->>Local: fetch(predicate:)
-    Note right of Local: 📁 Data/Local/PersistenceController.swift:34
+    Note right of Local:  Data/Local/PersistenceController.swift:34
     Local-->>Repo: localResults
     Repo->>Remote: GET /search?q=keyword
-    Note right of Remote: 📁 Network/APIClient.swift:123
+    Note right of Remote:  Network/APIClient.swift:123
     Remote-->>Repo: remoteResults
     Repo-->>UC: mergedResults
     UC-->>VM: SearchUiState
@@ -310,35 +325,36 @@ final class SearchRepoImpl: SearchRepo {
 ```mermaid
 flowchart TB
     subgraph UI[界面层]
-        FEED_VIEW["FeedView<br/>⚙️ var body: some View<br/>📁 Features/Feed/FeedView.swift:34"]
+        FEED_VIEW["FeedView<br>var body: some View<br>Features/Feed/FeedView.swift:34"]
     end
-
     subgraph VM[ViewModel层]
-        FEED_VM["FeedVM<br/>⚙️ loadFeeds()/refresh()<br/>📁 Features/Feed/FeedVM.swift:56"]
+        FEED_VM["FeedVM<br>loadFeeds()/refresh()<br>Features/Feed/FeedVM.swift:56"]
     end
-
     subgraph UseCase[业务逻辑层]
-        GET_RECOMMEND["GetRecommendUseCase<br/>⚙️ execute(userId:)<br/>📁 Domain/UseCases/GetRecommendUseCase.swift:23"]
-        FILTER_CONTENT["FilterContentUseCase<br/>⚙️ filterByPreference()<br/>📁 Domain/UseCases/FilterContentUseCase.swift:45"]
+        GET_RECOMMEND["GetRecommendUseCase<br>execute(userId:)<br>Domain/UseCases/GetRecommendUseCase.swift:23"]
+        FILTER_CONTENT["FilterContentUseCase<br>filterByPreference()<br>Domain/UseCases/FilterContentUseCase.swift:45"]
     end
-
     subgraph Data[数据层]
-        REPO["ContentRepoImpl<br/>⚙️ getFeeds()/saveFeeds()<br/>📁 Data/ContentRepo.swift:78"]
-        LOCAL_DS["Core Data Stack<br/>⚙️ fetch()/save()<br/>📁 Data/Local/PersistenceController.swift:34"]
-        REMOTE_DS["APIClient (URLSession)<br/>⚙️ request()<br/>📁 Network/APIClient.swift:90"]
+        REPO["ContentRepoImpl<br>getFeeds()/saveFeeds()<br>Data/ContentRepo.swift:78"]
+        LOCAL_DS["Core Data Stack<br>fetch()/save()<br>Data/Local/PersistenceController.swift:34"]
+        REMOTE_DS["APIClient (URLSession)<br>request()<br>Network/APIClient.swift:90"]
     end
 
-    FEED_VIEW --> FEED_VM
-    FEED_VM --> GET_RECOMMEND
-    GET_RECOMMEND --> FILTER_CONTENT
-    FILTER_CONTENT --> REPO
-    REPO --> LOCAL_DS
-    REPO --> REMOTE_DS
 
-    style FEED_VIEW fill:#e1f5fe
-    style FEED_VM fill:#fff3e0
-    style GET_RECOMMEND fill:#e8f5e9
-    style REPO fill:#fce4ec
+
+
+
+FEED_VIEW --> FEED_VM
+FEED_VM --> GET_RECOMMEND
+GET_RECOMMEND --> FILTER_CONTENT
+FILTER_CONTENT --> REPO
+REPO --> LOCAL_DS
+REPO --> REMOTE_DS
+
+style FEED_VIEW fill:#e1f5fe
+style FEED_VM fill:#fff3e0
+style GET_RECOMMEND fill:#e8f5e9
+style REPO fill:#fce4ec
 ```
 
 **步骤与API详解**：
