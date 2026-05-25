@@ -64,7 +64,7 @@
 ### 6. 模块依赖关系图
 
 ```mermaid
-graph TD
+flowchart TD
     A[模块A] --> B[模块B]
     A --> C[模块C]
     B --> D[模块D]
@@ -231,8 +231,8 @@ flowchart LR
 ```mermaid
 erDiagram
     USER ||--o{ ORDER : places
-    ORDER ||--|{ LINE-ITEM : contains
-    PRODUCT ||--o{ LINE-ITEM : "ordered in"
+    ORDER ||--|{ LINE_ITEM : contains
+    PRODUCT ||--o{ LINE_ITEM : "ordered in"
 ```
 
 #### 13.2 数据表结构

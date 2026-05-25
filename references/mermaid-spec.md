@@ -6,8 +6,8 @@
 
 | 图表 | 语法 | 节点格式 |
 |------|------|----------|
-| 依赖图 | `graph TD/LR` | `A[名称] --> B[名称]` |
-| 业务流程图 | `flowchart TB/SUB` | `A[名称] --> B[名称]` + `subgraph` |
+| 依赖图 | `flowchart TD/LR` | `A[名称] --> B[名称]` |
+| 业务流程图 | `flowchart TB` + `subgraph` | `A[名称] --> B[名称]` + `subgraph` 分组 |
 | 时序图 | `sequenceDiagram` | `participant` + `->>` |
 | ER图 | `erDiagram` | `T1 \|\|--o{ T2 : rel` |
 | 流程图 | `flowchart LR/TB` | `A[名称] --> B[名称]` |
@@ -17,7 +17,7 @@
 用于展示项目各模块之间的依赖关系。
 
 ```mermaid
-graph TD
+flowchart TD
     App[app] --> FeatureA[feature:foryou]
     App --> FeatureB[feature:topic]
     FeatureA --> Core[core:data]
@@ -25,8 +25,8 @@ graph TD
 ```
 
 ### 语法说明
-- `graph TD` - 从上到下的有向图
-- `graph LR` - 从左到右的有向图
+- `flowchart TD` - 从上到下的流程图
+- `flowchart LR` - 从左到右的流程图
 - 节点格式：`NodeID[显示文本]`
 - 箭头：`A --> B` 表示 A 依赖 B
 
@@ -45,8 +45,10 @@ erDiagram
 |------|------|
 | `||--||` | 一对一 |
 | `||--o{` | 一对多 |
-| `o{}--o{}` | 多对多 |
-| `||--\|{` | 一对唯一 |
+| `}o--o{` | 多对多 |
+| `||--|{` | 一对唯一 |
+
+> **注意**：ER 图实体名只能使用字母、数字和下划线，**不能包含连字符 `-`**，否则会与关系语法 `--` 冲突。
 
 ## 数据流图
 
