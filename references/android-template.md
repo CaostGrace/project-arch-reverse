@@ -204,8 +204,8 @@ flowchart TB
     end
     subgraph DataFlow[数据流程]
         REPO["Repository<br>NewsRepo.saveBookmark()<br>data/NewsRepo.kt:112"]
-        LOCAL[("Room DB<br>BookmarkDao.insert()<br>data/local/BookmarkDao.kt:45)"]
-        REMOTE[("Remote API<br>NewsApi.bookmark()<br>data/remote/NewsApi.kt:78)"]
+        LOCAL["Room DB<br>BookmarkDao.insert()<br>data/local/BookmarkDao.kt:45"]
+        REMOTE["Remote API<br>NewsApi.bookmark()<br>data/remote/NewsApi.kt:78"]
         REPO --> LOCAL
         REPO --> REMOTE
     end

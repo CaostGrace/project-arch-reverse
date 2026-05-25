@@ -130,8 +130,8 @@ flowchart TB
     end
     subgraph DataFlow[数据流程]
         REPO["Repository<br>ContentRepo.saveBookmark()<br>Data/ContentRepo.swift:112"]
-        LOCAL[("Core Data<br>PersistenceController.save()<br>Data/Local/PersistenceController.swift:45)"]
-        REMOTE[("Remote API<br>APIClient.request()<br>Network/APIClient.swift:78)"]
+        LOCAL["Core Data<br>PersistenceController.save()<br>Data/Local/PersistenceController.swift:45"]
+        REMOTE["Remote API<br>APIClient.request()<br>Network/APIClient.swift:78"]
         REPO --> LOCAL
         REPO --> REMOTE
     end

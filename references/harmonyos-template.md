@@ -313,8 +313,8 @@ flowchart TB
     end
     subgraph DataFlow[数据流程]
         REPO["Repository<br>ContentRepo.saveBookmark()<br>common/src/main/ets/repository/ContentRepo.ets:112"]
-        LOCAL[("Preferences DB<br>PrefUtil.put()<br>common/src/main/ets/utils/PrefUtil.ets:45)"]
-        REMOTE[("Remote API<br>ApiService.post()<br>common/src/main/ets/network/ApiService.ets:78)"]
+        LOCAL["Preferences DB<br>PrefUtil.put()<br>common/src/main/ets/utils/PrefUtil.ets:45"]
+        REMOTE["Remote API<br>ApiService.post()<br>common/src/main/ets/network/ApiService.ets:78"]
         REPO --> LOCAL
         REPO --> REMOTE
     end

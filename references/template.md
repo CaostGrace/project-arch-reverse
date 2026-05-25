@@ -144,8 +144,8 @@ flowchart TB
     end
     subgraph Data[数据层]
         REPO["数据仓储<br>DataRepository.fetch()<br>data/DataRepository.java:89"]
-        LOCAL[("本地存储<br>LocalDS.query()<br>data/local/LocalDS.ts:45)"]
-        REMOTE[("远程服务<br>RemoteDS.request()<br>data/remote/RemoteDS.go:112)"]
+        LOCAL["本地存储<br>LocalDS.query()<br>data/local/LocalDS.ts:45"]
+        REMOTE["远程服务<br>RemoteDS.request()<br>data/remote/RemoteDS.go:112"]
         REPO --> LOCAL
         REPO --> REMOTE
     end

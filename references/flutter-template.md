@@ -209,8 +209,8 @@ flowchart TB
     end
     subgraph DataFlow[数据流程]
         REPO["Repository<br>ContentRepo.saveBookmark()<br>lib/features/content/data/ContentRepo.dart:89"]
-        LOCAL[("本地存储<br>LocalDS.insert()<br>lib/core/data/local/LocalDS.dart:45)"]
-        REMOTE[("远程API<br>ApiClient.post()<br>lib/core/network/ApiClient.dart:112)"]
+        LOCAL["本地存储<br>LocalDS.insert()<br>lib/core/data/local/LocalDS.dart:45"]
+        REMOTE["远程API<br>ApiClient.post()<br>lib/core/network/ApiClient.dart:112"]
         REPO --> LOCAL
         REPO --> REMOTE
     end
