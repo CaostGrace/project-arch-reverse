@@ -87,6 +87,20 @@ MyApp (工程根目录)
 └── oh-package.json5             # 依赖库信息
 ```
 
+#### UI/UX 组件使用情况
+
+> 各模块使用的 ArkUI 关键组件清单。
+
+| 层级 | 模块 | 使用的 UI 组件 | 组件库 |
+|------|------|---------------|--------|
+| 入口 | products/phone | Navigation, TabContent, Tabs | ArkUI |
+| 共用 | common/components | Button, Text, Image, List, Grid, Dialog | ArkUI 基础组件 |
+| 特性 | features/login | TextInput, Button, LoadingProgress, Toast | ArkUI |
+| 特性 | features/search | Search, ListItem, Refresh, PullToRefresh | ArkUI |
+| 特性 | features/payment | Stepper, Radio, Checkbox, QRCode | ArkUI |
+
+> **UX 设计要点**：多设备响应式布局 (phone/tablet/pc/watch 断点适配) / 原子化服务 (元服务卡片) / 一多能力 (一次开发多端部署) / 自由窗口 (PC/平板悬浮窗) / 深色模式适配 / 无障碍朗读 (accessibilityGroup)
+
 ### H5. 配置文件分析
 
 #### app.json5（应用级配置）

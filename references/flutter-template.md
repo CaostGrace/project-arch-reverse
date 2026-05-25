@@ -78,6 +78,20 @@ lib/
 └── main.dart            # 入口文件
 ```
 
+#### UI/UX 组件使用情况
+
+> 各模块使用的 Flutter Widget 关键组件清单。
+
+| 层级 | 模块 | 使用的 UI 组件 | 组件库 |
+|------|------|---------------|--------|
+| 入口 | main | MaterialApp, ThemeData, GoRouter | Flutter Material |
+| 核心 | core/theme | ThemeData, ColorScheme, TextTheme, IconTheme | Flutter Material |
+| 功能 | features/users/presentation | ListView, Card, AppBar, FloatingActionButton, RefreshIndicator | Flutter Material |
+| 功能 | features/users/presentation/widgets | UserAvatar, UserCard, SearchDelegate, FilterChip | 自定义 Widget |
+| 功能 | features/products/presentation | GridView, Hero, Chip, Slider, BottomSheet | Flutter Material |
+
+> **UX 设计要点**：Material Design 3 / 自适应布局 (LayoutBuilder + Breakpoint) / Hero 共享元素过渡动画 / 下拉刷新 + 无限滚动分页 / 空状态与错误状态 Widget / 深色模式 / Cupertino 风格适配 (iOS)
+
 ### F4. 页面导航结构
 
 ```mermaid

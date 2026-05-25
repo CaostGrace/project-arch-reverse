@@ -58,6 +58,22 @@
 | 核心层  | core:\*     | 共享基础设施（core:data, core:domain, core:network 等） |
 | 构建逻辑 | build-logic | Gradle 插件和构建变体配置                               |
 
+#### UI/UX 组件使用情况
+
+> 各模块使用的 Jetpack Compose / Material 3 关键组件清单。
+
+| 层级 | 模块 | 使用的 UI 组件 | 组件库 |
+|------|------|---------------|--------|
+| 应用层 | app | Scaffold, NavigationBar, TopAppBar | Material3 Compose |
+| 功能层 | feature:foryou | LazyColumn, Card, AsyncImage, PullToRefresh | Material3 Compose |
+| 功能层 | feature:topic | LazyVerticalGrid, Chip, FilterChip | Material3 Compose |
+| 功能层 | feature:interest | LazyColumn, FollowButton, Badge | Material3 Compose |
+| 功能层 | feature:search | SearchBar, LazyColumn, TextField | Material3 Compose |
+| 功能层 | feature:bookmark | IconToggleButton, AnimatedVisibility | Material3 Compose |
+| 核心层 | core:designsystem | Theme, Typography, ColorScheme, Shapes | Material3 Compose |
+
+> **UX 设计要点**：Material 3 动态配色 (Dynamic Color) / 自适应布局 (WindowSizeClass) / 列表支持下拉刷新与分页加载 / 点击卡片进入详情 (共享元素过渡) / 底部导航栏切换
+
 ### A4. 循环依赖检测
 
 使用 Gradle 命令检测循环依赖：

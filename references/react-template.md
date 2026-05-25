@@ -75,6 +75,21 @@ src/
 └── styles/           # 全局样式
 ```
 
+#### UI/UX 组件使用情况
+
+> 各目录/模块使用的 UI 组件库和关键组件清单。
+
+| 目录/模块 | 使用的 UI 组件 | 组件库 |
+|-----------|---------------|--------|
+| components/ui | Button, Dialog, DropdownMenu, Toast | shadcn/ui / Radix UI |
+| components/layout | Sidebar, Header, Breadcrumb, PageShell | 自定义布局 |
+| features/users | DataTable, UserAvatar, RoleBadge, Form | shadcn/ui + React Hook Form |
+| features/products | Card, Carousel, Gallery, PriceTag, FilterPanel | shadcn/ui + 自定义 |
+| features/orders | Stepper, Timeline, StatusBadge, List | shadcn/ui |
+| hooks | useMediaQuery, useTheme, useInfiniteScroll | React hooks |
+
+> **UX 设计要点**：Tailwind CSS 响应式断点 / 路由切换 Loading + Suspense / 骨架屏 (Skeleton) / Toast 操作反馈 / 深色模式 (next-themes) / 无障碍 (Radix ARIA) / 服务端渲染 SSR 首屏优化
+
 ### R4. 路由结构
 
 ```mermaid

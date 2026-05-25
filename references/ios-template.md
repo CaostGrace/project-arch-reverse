@@ -54,6 +54,21 @@
 | Core | Core/* | 共享代码 |
 | Services | Services/* | 网络、存储服务 |
 
+#### UI/UX 组件使用情况
+
+> 各模块使用的 SwiftUI 关键组件清单。
+
+| 类别 | 模块 | 使用的 UI 组件 | 组件库 |
+|------|------|---------------|--------|
+| App | MyApp | NavigationStack, TabView, WindowGroup | SwiftUI |
+| Features | Features/home | List, NavigationLink, AsyncImage, .refreshable | SwiftUI |
+| Features | Features/search | .searchable, List, Label, SuggestionList | SwiftUI |
+| Features | Features/profile | Form, Section, Toggle, Picker, PhotoPicker | SwiftUI |
+| Features | Features/detail | ScrollView, VStack, ShareLink, ContextMenu | SwiftUI |
+| Core | Core/designsystem | Font, Color, Image, ButtonStyle 设计规范 | SwiftUI |
+
+> **UX 设计要点**：iOS 人机界面指南 (HIG) / SF Symbols 图标体系 / 深色模式适配 (ColorScheme) / Dynamic Type 动态字体 / VoiceOver 无障碍 / 横竖屏适配 (SizeClass) / Haptic Touch 触觉反馈
+
 ### I4. 依赖管理
 
 #### Swift Package Manager

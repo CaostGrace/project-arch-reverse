@@ -74,6 +74,20 @@ src/
 └── utils/          # 工具函数
 ```
 
+#### UI/UX 组件使用情况
+
+> 各目录/模块使用的 UI 组件库和关键组件清单。
+
+| 目录/模块 | 使用的 UI 组件 | 组件库 |
+|-----------|---------------|--------|
+| components/common | Button, Input, Dialog, Toast, Table | {TDesign / Element Plus / Naive UI} |
+| components/business | UserCard, ProductItem, SearchPanel | 自定义业务组件 |
+| layouts | Sidebar, Header, Footer, PageContainer | 布局组件 |
+| pages | RouterView, Pagination, Form, Upload | {组件库} + 组合 |
+| composables | useTheme, useBreakpoint, useLoading, useInfiniteScroll | VueUse |
+
+> **UX 设计要点**：响应式布局 (mobile/tablet/desktop 断点) / 路由过渡动画 / 骨架屏加载态 / 空状态与错误状态页面 / Toast 操作反馈 / 深色模式 (CSS Variables) / 国际化 RTL 布局支持
+
 ### V4. 路由结构
 
 ```mermaid
