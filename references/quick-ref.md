@@ -61,7 +61,7 @@
 
 | 策略 | 条件 | 操作 |
 |------|------|------|
-| A 全量生成 | docs/ + docs/modules/ 均不存在 | 创建全部文档 |
+| A 全量生成 | docs/architecture/ 不存在 | 创建全部文档 |
 | B 补充生成 | 根文档存在，模块文档部分缺失 | 生成缺失模块 |
 | C 增量更新 | 根文档 + 所有模块文档均存在 | 对比更新 |
 | D 重建根文档 | 根文档不存在，模块文档存在 | 重建根文档 |
@@ -80,9 +80,9 @@
 
 ```bash
 # 检查文档存在性
-ls docs/*.项目架构文档.md 2>/dev/null || echo "根文档不存在"
-find docs/modules/ -name "*模块架构.md" 2>/dev/null | head -20
-find docs/modules/ -name "*_核心日志.md" 2>/dev/null | head -20
+ls docs/architecture/*.项目架构文档.md 2>/dev/null || echo "根文档不存在"
+find docs/architecture/modules/ -name "*模块架构.md" 2>/dev/null | head -20
+find docs/logs/ -name "*_核心日志.md" 2>/dev/null | head -20
 
 # Android 项目
 find . -maxdepth 3 -name "settings.gradle*" -o -name "build.gradle*" | head -5
@@ -125,8 +125,8 @@ cat package.json | grep -E '"dependencies"|"devDependencies"' -A 30 | grep -E '"
 
 | 类型 | 路径 | 命名 |
 |------|------|------|
-| 根文档 | `docs/` | `{项目名称}项目架构文档.md` |
-| 模块文档 | `docs/modules/{模块}/` | `{模块名称}模块架构.md` |
-| 核心日志文档 | `docs/modules/{模块}/` | `{模块名称}_核心日志.md` |
+| 根文档 | `docs/architecture/` | `{项目名称}项目架构文档.md` |
+| 模块文档 | `docs/architecture/modules/{模块}/` | `{模块名称}模块架构.md` |
+| 核心日志文档 | `docs/logs/{模块}/` | `{模块名称}_核心日志.md` |
 
 > ⚠️ **重要**：所有模块的架构文档都必须生成，不可省略！核心模块的日志文档也**必须生成**。核心模块 = 用户可达界面 + 后台运行 + 模块复杂度高 + 用户手动指定（满足任一即可）。
