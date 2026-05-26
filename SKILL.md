@@ -148,7 +148,7 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 | 模块文档 | 12 | ★第4章业务流程、★第5章数据流、★第6章核心功能流程图、★第11章关键类和方法 |
 | 核心日志 | 5 | ★第3章核心功能日志清单、★第5章常见问题排查指南 |
 
-> 💡 **最小可行文档**：如时间紧急，至少完成 P0+P1 章节（见 `references/chapters-ref.md` 优先级表）
+> 💡 **最小可行文档**：如时间紧急，至少完成 P0+P1+P2 章节（见 `references/chapters-ref.md` 优先级表）
 
 **核心功能判定**（核心模块中满足**任一**即为核心功能）：
 - 用户直接交互（按钮/表单/导航）
@@ -221,11 +221,8 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 
 ## 参考文档
 
-> 💡 **首次使用从 [references/INDEX.md](references/INDEX.md) 开始**
-
 | 文件 | 用途 |
 |------|------|
-| [references/INDEX.md](references/INDEX.md) | 入口索引：按用途/检查点/学习路径分类 |
 | [references/quick-ref.md](references/quick-ref.md) | 快速参考（执行预估、策略决策树、命令） |
 | [references/chapters-ref.md](references/chapters-ref.md) | 章节速查（21+12+5章详情+优先级） |
 | [references/mermaid-spec.md](references/mermaid-spec.md) | Mermaid图表规范（含标注三步法+示例） |
