@@ -16,32 +16,35 @@
 
 ## 模块依赖图
 
-用于展示项目各模块之间的依赖关系。
+用于展示项目各模块之间的依赖关系。**每个模块节点必须标注对应的构建文件路径和行号**。
 
 ```mermaid
 flowchart TD
-    Entry[入口模块] --> ModuleA[模块A]
-    Entry --> ModuleB[模块B]
-    ModuleA --> Core[核心模块]
-    Core --> Common[公共模块]
+    Entry["入口模块<br>app/build.gradle:1"] --> ModuleA["模块A<br>feature/a/build.gradle:1"]
+    Entry --> ModuleB["模块B<br>feature/b/build.gradle:1"]
+    ModuleA --> Core["核心模块<br>core/build.gradle:1"]
+    Core --> Common["公共模块<br>common/build.gradle:1"]
 ```
 
 ### 语法说明
 
 - `flowchart TD` - 从上到下的流程图
 - `flowchart LR` - 从左到右的流程图
-- 节点格式：`NodeID[显示文本]`
+- 节点格式：`NodeID["模块名<br>构建文件路径:行号"]`
 - 箭头：`A --> B` 表示 A 依赖 B
+- ⚠️ **每个模块节点必须标注构建文件位置**（如 `build.gradle:1`、`package.json:1`），标注方式同业务流程图
 
 ## 数据库ER图
 
-用于展示数据库表结构和外键关系。
+用于展示数据库表结构和外键关系。ER 图下方必须附带**表结构说明表**，标注每个表的代码位置（建表语句/迁移文件/实体类路径:行号）。
 
 ```mermaid
 erDiagram
     NEWS_RESOURCE ||--o{ TOPIC : relates_to
     USER ||--o{ BOOKMARK : has
 ```
+
+> ⚠️ ER 图本身不直接标注代码位置（Mermaid erDiagram 语法限制），但**必须在 ER 图下方附带表结构说明表**，包含每个表对应的代码位置（如建表 SQL 文件路径、Entity 类文件路径:行号）。
 
 ### 关系符号
 
@@ -114,9 +117,9 @@ C1 --> C2
 | ---- | ----- | ------------------------ | ---------------- | ----------------- | --------- | ------ |
 | 1    | {步骤名} | `ClassName.method(Type)` | `param`: 类型 — 含义 | `ReturnType` — 含义 | `文件路径:行号` | {步骤说明} |
 
-### 关键代码示例（推荐）★
+### 关键代码示例（必需）★
 
-对于复杂步骤，应在步骤表下方提供关键代码片段：
+对于**所有涉及代码的步骤**，必须在步骤表下方提供关键代码片段：
 
 ```{语言}
 // 文件路径:行号 - 功能说明
@@ -125,7 +128,53 @@ C1 --> C2
 
 ## 核心功能时序图（含代码标注）⭐
 
-用于展示核心功能的调用时序，**每个调用必须用** **`Note`** **标注代码位置，箭头消息标注方法名**。时序图下方必须附带**步骤详解表**和**关键代码示例**。
+用于展示核心功能的调用时序，**每个核心功能/能力必须有独立的时序图**，不允许合并或简化。每个调用必须用 **`Note`** **标注代码位置**，箭头消息标注方法名。时序图下方必须附带**步骤详解表**和**关键代码示例**。
+
+### 详细度要求 ★
+
+| 维度 | 最低要求 | 说明 |
+|------|----------|------|
+| 调用步骤数 | ≥6步（不含返回箭头） | 覆盖完整的调用链路，不允许省略中间层 |
+| 参与者数量 | ≥4个 | 展示跨组件/跨层交互（UI→Service→Logic→Repo→DS） |
+| 分层覆盖 | 表现层→业务层→数据层 | 不能跳层（如 `UI->>Repo` 跳过 Service） |
+| 返回消息 | 每个请求有对应返回 | 关键返回须标注转换逻辑（如 `Note left of Repo: DTO→Entity 转换`） |
+| 步骤详解表 | 必需 | 每个时序图下方必须附带 |
+| 关键代码示例 | 必需 | 每个核心步骤展示代码片段 |
+
+> 🔴 **禁止粗略时序图**：不允许生成只有3-4步的简化时序图，不允许将多个核心功能合并为一个时序图。每个核心功能/能力都必须有独立的、足够详细的时序图。
+
+### 禁止的粗略模式
+
+> 以下为**错误示例**，禁止在时序图中出现：
+
+❌ **跳层 + 步骤过少 + 参与者不足**（错误）：
+```
+sequenceDiagram
+    participant UI as Page
+    participant Repo as Repository
+    UI->>Repo: getData()           %% 跳过Service层，只有2个参与者
+    Repo-->>UI: Data               %% 只有1个请求+1个返回，太粗略
+```
+
+❌ **多个功能合并为一个时序图**（错误）：
+```
+sequenceDiagram
+    participant UI as Page
+    participant Service as Service
+    UI->>Service: login()           %% 登录功能
+    UI->>Service: search()          %% 搜索功能（不应合并）
+```
+
+❌ **只有3-4步的简化时序图**（错误）：
+```
+sequenceDiagram
+    participant UI as Page
+    participant Service as Service
+    participant Repo as Repository
+    UI->>Service: loadData()
+    Service->>Repo: fetch()
+    Repo-->>UI: Data                %% 跳过Service返回，步骤不足
+```
 
 ### 格式规范
 
@@ -181,7 +230,9 @@ sequenceDiagram
 | 6  | GetProfileLogic | (映射)            | `map to view model`          | `UserEntity`    | `ProfileResult`  | `domain/GetProfileLogic.java:34`         | 实体→视图模型  |
 | 7  | ProfileService  | (更新)            | `update UI`                  | `ProfileResult` | `void`           | -                                        | 渲染更新     |
 
-### 关键代码示例（推荐）★
+### 关键代码示例（必需）★
+
+对于**所有涉及代码的调用步骤**，必须在步骤表下方提供关键代码片段：
 
 ```java
 // 📁 data/UserRepository.ts:89 - DTO转换
@@ -197,7 +248,9 @@ public UserEntity getUser(String userId) {
 
 ### 简化版时序图（模块文档用）
 
-当参与者较少时，可简化箭头消息中的入参。同样需要附带步骤详解表：
+当参与者较少时，可简化箭头消息中的入参，但**步骤数和分层要求不变**。同样需要附带步骤详解表和关键代码示例：
+
+> ⚠️ "简化版"仅指入参可以省略类型信息，**不意味着步骤数可以减少、分层可以跳过**。仍然必须满足 ≥6步、≥4参与者、完整分层的要求。
 
 ```mermaid
 sequenceDiagram
@@ -223,7 +276,7 @@ sequenceDiagram
 
 ## 数据流图
 
-用于展示数据在各组件间的流转过程。
+用于展示数据在各组件间的流转过程。**每条消息必须标注方法名，每个参与者必须用 Note 标注代码位置**。
 
 ```mermaid
 sequenceDiagram
@@ -232,25 +285,31 @@ sequenceDiagram
     participant DS as DataSource
 
     Logic->>Repo: getData()
+    Note right of Repo:  data/DataRepository.java:45
     Repo->>DS: fetch()
+    Note right of DS:  data/RemoteDS.ts:78
     DS-->>Repo: Result
     Repo-->>Logic: State
 ```
 
+> ⚠️ 数据流图与核心功能时序图格式一致，每条消息和参与者都必须标注代码位置，并附带步骤详解表和关键代码示例。
+
 ## 导航流程图
 
-用于展示页面跳转关系。
+用于展示页面跳转关系。**每个页面节点必须标注路由配置的代码位置**。
 
 ```mermaid
 flowchart LR
-    Home[首页] --> Detail[详情页]
-    Home --> Search[搜索页]
+    Home["首页<br>HomePage.vue:1"] --> Detail["详情页<br>DetailPage.vue:1"]
+    Home --> Search["搜索页<br>SearchPage.vue:1"]
     Detail --> Home
 ```
 
+> ⚠️ 导航流程图中每个页面节点必须标注对应的文件路径和行号，标注方式同业务流程图。
+
 ## 类图
 
-用于展示核心数据类之间的关系。
+用于展示核心数据类之间的关系。**每个类必须标注对应的文件路径和行号**，关键方法需在文档中展示代码片段。
 
 ```mermaid
 classDiagram
@@ -259,20 +318,25 @@ classDiagram
         +String email
         +login()
         +logout()
+        %% models/User.java:1
     }
     class Order {
         +String orderId
         +Date createTime
         +create()
         +cancel()
+        %% models/Order.java:1
     }
     class Product {
         +String name
         +Decimal price
+        %% models/Product.java:1
     }
     User "1" --> "*" Order : places
     Order "*" --> "*" Product : contains
 ```
+
+> ⚠️ 类图中每个类必须通过注释 `%% 文件路径:行号` 或在类图下方的**类说明表**中标注代码位置。类图下方必须附带类说明表和关键类的代码示例。
 
 ### 语法说明
 

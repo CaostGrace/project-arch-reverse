@@ -307,8 +307,9 @@ sequenceDiagram
     Note right of API:  network/ApiClient.ts:89
     API-->>Repo: SearchResponse
     Repo-->>UC: combinedResults
-    Note left of Repo:  data/SearchRepository.java:78<br>merge cache+remote
-    UC-->>Logic: SearchResult
+    Note left of Repo:  data/SearchRepository.java:78<br>merge cache+remote + transform
+    UC->>Logic: applyFilters(combinedResults)
+    Note right of UC:  services/SearchLogic.ts:45
     Logic-->>UI: showResults
 ```
 
@@ -321,6 +322,9 @@ sequenceDiagram
 | 3 | SearchLogic | SearchRepository | `searchContent(String q)` | `q`: 查询字符串 | `SearchResult` | `data/SearchRepository.java:45` | 数据查询 |
 | 4 | SearchRepository | CacheService | `getCache(String key)` | `key`: 缓存键 | `CacheHit?` | `core/CacheService.py:34` | 检查缓存 |
 | 5 | SearchRepository | ApiClient | `GET /search?q={keyword}` | `q`: 查询参数 | `SearchResponse` | `network/ApiClient.ts:89` | HTTP检索请求 |
+| 6 | SearchRepository | (合并) | `merge cache+remote` | `CacheHit` + `SearchResponse` | `CombinedResult` | `data/SearchRepository.java:78` | 缓存+远程合并+转换 |
+| 7 | SearchLogic | (过滤) | `applyFilters(CombinedResult)` | `combinedResults` | `SearchResult` | `services/SearchLogic.ts:45` | 应用搜索过滤规则 |
+| 8 | SearchService | (更新) | `showResults` | `SearchResult` | `void` | - | 渲染搜索结果 |
 
 **关键代码示例**：
 
@@ -440,22 +444,42 @@ public SuccessResult execute(Params params) {
 
 #### 12.5 模块间调用流程（时序图）★
 
-展示跨模块调用的完整时序，标注模块边界和代码位置。
+展示跨模块调用的完整时序，标注模块边界和代码位置。**每个跨模块交互都必须有独立的时序图，≥6步，≥4参与者**。
 
 ```mermaid
 sequenceDiagram
     participant ModuleA as ModuleAPage<br>feature:moduleA
-    participant ModuleB as ModuleBService<br>feature:moduleB
-    participant Core as CoreService<br>core:data
+    participant ServiceA as ModuleAService<br>feature:moduleA
+    participant ServiceB as ModuleBService<br>feature:moduleB
+    participant CoreRepo as CoreRepository<br>core:data
+    participant CoreDS as CoreDataSource<br>core:data
 
-    ModuleA->>ModuleB: callService(params)
-    Note right of ModuleB:  modules/featureB/ModuleBService.java:45
-    ModuleB->>Core: fetchData(id)
-    Note right of Core:  core/data/CoreService.ts:78
-    Core-->>ModuleB: DataResult
-    ModuleB-->>ModuleA: transformedData
-    Note left of ModuleB:  modules/featureB/ModuleBService.java:67<br>transform response
+    ModuleA->>ServiceA: triggerAction(params)
+    Note right of ServiceA:  modules/featureA/ModuleAService.java:34
+    ServiceA->>ServiceB: callService(params)
+    Note right of ServiceB:  modules/featureB/ModuleBService.java:45
+    ServiceB->>CoreRepo: fetchData(id)
+    Note right of CoreRepo:  core/data/CoreRepository.java:56
+    CoreRepo->>CoreDS: query(sqlQuery)
+    Note right of CoreDS:  core/data/CoreDataSource.ts:78
+    CoreDS-->>CoreRepo: RawData
+    CoreRepo-->>ServiceB: DataResult
+    Note left of CoreRepo:  core/data/CoreRepository.java:89<br>RawData→DataResult 转换
+    ServiceB-->>ServiceA: ProcessedResult
+    Note left of ServiceB:  modules/featureB/ModuleBService.java:67<br>transform response
+    ServiceA-->>ModuleA: updateUI
 ```
+
+**步骤详解**：
+
+| 步骤 | 调用者 | 被调用者 | 方法签名 | 参数 | 返回 | 代码位置 | 说明 |
+|------|--------|----------|----------|------|------|----------|------|
+| 1 | ModuleAPage | ModuleAService | `triggerAction(Params)` | `params`: 业务参数 | `void` | `modules/featureA/ModuleAService.java:34` | UI触发跨模块调用 |
+| 2 | ModuleAService | ModuleBService | `callService(Params)` | `params`: 跨模块请求参数 | `ProcessedResult` | `modules/featureB/ModuleBService.java:45` | 跨模块服务调用 |
+| 3 | ModuleBService | CoreRepository | `fetchData(Long id)` | `id`: 数据ID | `DataResult` | `core/data/CoreRepository.java:56` | 核心数据层查询 |
+| 4 | CoreRepository | CoreDataSource | `query(SqlQuery)` | `sqlQuery`: SQL查询 | `RawData` | `core/data/CoreDataSource.ts:78` | 底层数据源查询 |
+| 5 | CoreRepository | (转换) | `transform` | `RawData` | `DataResult` | `core/data/CoreRepository.java:89` | RawData→DataResult |
+| 6 | ModuleBService | (转换) | `transform` | `DataResult` | `ProcessedResult` | `modules/featureB/ModuleBService.java:67` | 结果适配转换 |
 
 ### 13. 数据库设计
 
@@ -660,7 +684,7 @@ D --> E
 
 ### 5. 数据流（时序图）★
 
-> 使用时序图展示模块内数据请求到渲染的完整流程，每条消息标注方法名，每个参与者用 Note 标注文件路径。下方附带**步骤详解表**。
+> 使用时序图展示模块内数据请求到渲染的完整流程，每条消息标注方法名，每个参与者用 Note 标注文件路径。下方附带**步骤详解表**和**关键代码示例**。**≥6步，≥4参与者，完整分层**。
 
 ```mermaid
 sequenceDiagram
@@ -668,6 +692,7 @@ sequenceDiagram
     participant Logic as ModuleService
     participant UC as ProcessLogic
     participant Repo as ModuleRepository
+    participant Cache as CacheService
     participant DS as DataSource
 
     UI->>Logic: loadData()
@@ -676,6 +701,9 @@ sequenceDiagram
     Note right of UC:  services/ProcessLogic.ts:23
     UC->>Repo: fetchData()
     Note right of Repo:  data/ModuleRepository.java:67
+    Repo->>Cache: getCache(key)
+    Note right of Cache:  core/CacheService.java:34
+    Cache-->>Repo: cachedResult (hit/miss)
     Repo->>DS: query()
     Note right of DS:  data/ModuleDS.py:45
     DS-->>Repo: rawData
@@ -693,16 +721,16 @@ sequenceDiagram
 | 1 | ModulePage | ModuleService | `loadData()` | - | `void` | `modules/{模块名}/ModuleService.java:45` | 触发数据加载 |
 | 2 | ModuleService | ProcessLogic | `execute(Params)` | `Params` | `ProcessContext` | `services/ProcessLogic.ts:23` | 业务逻辑编排 |
 | 3 | ProcessLogic | ModuleRepository | `fetchData()` | - | `RawData` | `data/ModuleRepository.java:67` | 数据查询 |
-| 4 | ModuleRepository | DataSource | `query()` | - | `RowSet` | `data/ModuleDS.py:45` | 底层数据源查询 |
-| 5 | DataSource | (返回) | `rawData` | - | `RowSet` | - | 原始数据返回 |
+| 4 | ModuleRepository | CacheService | `getCache(String key)` | `key`: 缓存键 | `CacheHit?` | `core/CacheService.java:34` | 检查缓存 |
+| 5 | ModuleRepository | DataSource | `query()` | - | `RowSet` | `data/ModuleDS.py:45` | 底层数据源查询 |
 | 6 | ModuleRepository | (转换) | `domainData` | - | `DomainModel` | `data/ModuleRepository.java:89` | DTO→领域模型映射 |
 | 7 | ProcessLogic | (返回) | `ResultState` | - | `Result<Data>` | `services/ProcessLogic.ts:56` | 业务处理结果 |
 | 8 | ModuleService | (更新UI) | `render` | - | `void` | - | 渲染到界面 |
-```
 
 ### 6. 核心功能流程图 ★
 
 > 每个核心功能提供**流程图 + 时序图 + 步骤API详解 + 关键代码**四合一展示。
+> 🔴 **每个核心功能/能力必须有独立的时序图，不允许合并**。时序图必须≥6步、≥4参与者、完整分层。
 
 #### 5.1 {功能A}流程
 
@@ -712,6 +740,7 @@ sequenceDiagram
     participant Logic as {Service}
     participant UC as {Logic}
     participant Repo as {Repository}
+    participant Cache as {CacheService}
     participant External as {外部依赖}
 
     Trigger->>Logic: {方法名}({参数})
@@ -720,10 +749,14 @@ sequenceDiagram
     Note right of UC:  {文件路径:行号}
     UC->>Repo: {方法名}({参数})
     Note right of Repo:  {文件路径:行号}
+    Repo->>Cache: getCache({key})
+    Note right of Cache:  {文件路径:行号}
+    Cache-->>Repo: {cachedResult}
     Repo->>External: {请求/查询}
     Note right of External:  {文件路径:行号}
     External-->>Repo: {返回结果}
     Repo-->>UC: {转换后数据}
+    Note left of Repo:  {文件路径:行号}<br>{转换说明}
     UC-->>Logic: {处理结果}
     Logic-->>Trigger: {更新}
 ```
