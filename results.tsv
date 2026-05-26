@@ -1,0 +1,4 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-05-26T22:13	baseline	project-arch-reverse	-	74.9	baseline	-	初始评估	dry_run
+2026-05-26T22:13	6e76e73	project-arch-reverse	74.9	85.0	keep	Frontmatter+工作流+架构	添加英文触发词、5场景速查、内联核心判定表、章节速查、快速自检清单	dry_run
+2026-05-26T22:21	b2b1039	project-arch-reverse	85.0	87.4	keep	整体架构+工作流+指令具体性	Phase2.5探索性重写：流程驱动重组SKILL.md+references增强（输出质量检查点+交叉引用规范+快速自检3问+日志覆盖矩阵）	dry_run
