@@ -150,8 +150,8 @@ flowchart TB
     end
     subgraph Data[数据层]
         REPO["UserRepository<br>findByStatus()/save()<br>repository/UserRepository.java:112"]
-        DB["(MySQL<br>SELECT/INSERT<br>mapper/UserMapper.xml:45)"]
-        MQ["消息队列<br>KafkaProducer.send()<br>mq/KafkaProducer.java:56)"]
+        DB["MySQL<br>SELECT/INSERT<br>mapper/UserMapper.xml:45"]
+        MQ["消息队列<br>KafkaProducer.send()<br>mq/KafkaProducer.java:56"]
         REPO --> DB
         REPO --> MQ
     end

@@ -393,9 +393,9 @@ sequenceDiagram
     Comp->>BStore: bookmarkStore.toggleBookmark(itemId)
     Note right of BStore:  src/stores/bookmarkStore.ts:45
     BStore->>Service: bookmarkService.toggle(itemId)
-    BStore->>API: POST /api/bookmarks { itemId }
-    API-->>BStore: BookmarkResult
-    BStore-->>Comp: success
+    Service->>API: POST /api/bookmarks { itemId }
+    API-->>Service: BookmarkResult
+    Service-->>BStore: success
     Comp-->>Btn: update bookmark state
 ```
 

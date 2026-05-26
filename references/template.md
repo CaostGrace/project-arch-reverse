@@ -130,7 +130,10 @@ flowchart LR
 flowchart TB
     subgraph Init[初始化阶段]
         START["启动<br>MainEntry.init()<br>app/MainEntry.java:23"]
-        CONFIG --> AUTH[认证授权<br>AuthService.login()<br>auth/AuthService.java:56]
+        CONFIG["加载配置<br>ConfigLoader.load()<br>core/ConfigLoader.ts:34"]
+        AUTH[认证授权<br>AuthService.login()<br>auth/AuthService.java:56]
+        START --> CONFIG
+        CONFIG --> AUTH
     end
     subgraph Core[核心业务]
         HOME["业务首页<br>HomeController.index()<br>modules/home/HomeController.py:78"]

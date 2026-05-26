@@ -347,7 +347,7 @@ sequenceDiagram
     participant API as apiClient
     participant Backend as API Route
     participant Bookmark as useBookmark
-    participant Store as useUserStore
+    participant QC as useQueryClient
 
     Page->>Query: useQuery({ queryKey: ['feeds'] })
     Note right of Query:  src/hooks/useFeedQuery.ts:23
@@ -365,10 +365,10 @@ sequenceDiagram
     Page->>Bookmark: bookmarkMutation.mutate()
     Note right of Bookmark:  src/hooks/useBookmark.ts:23
     Bookmark->>Service: bookmarkService.toggle(itemId)
-    Bookmark->>API: POST /api/bookmarks { itemId }
-    API-->>Bookmark: BookmarkResult
-    Bookmark->>Store: invalidateQueries(['feeds'])
-    Store-->>Page: re-render with updated data
+    Service->>API: POST /api/bookmarks { itemId }
+    API-->>Service: BookmarkResult
+    Bookmark->>QC: invalidateQueries(['feeds'])
+    QC-->>Page: re-render with updated data
 ```
 
 **步骤详解**：

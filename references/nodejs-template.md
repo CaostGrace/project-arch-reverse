@@ -227,8 +227,8 @@ flowchart TB
     end
     subgraph Data[数据层]
         REPO["UserRepository<br>findMany()/create()<br>src/modules/users/UserRepository.ts:112"]
-        DB["(PostgreSQL<br>Prisma ORM<br>prisma/schema.prisma:45)"]
-        MQ["消息队列<br>BullQueue.add()<br>src/shared/queue/UserQueue.ts:56)"]
+        DB["PostgreSQL<br>Prisma ORM<br>prisma/schema.prisma:45"]
+        MQ["消息队列<br>BullQueue.add()<br>src/shared/queue/UserQueue.ts:56"]
         REPO --> DB
         REPO --> MQ
     end
