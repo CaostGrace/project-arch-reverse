@@ -7,10 +7,11 @@
 | 资源 | 说明 |
 |------|------|
 | [project-types-config.md](project-types-config.md) | 项目类型检测配置、分析流程 |
-| [chapters-ref.md](chapters-ref.md) | 章节速查表（21章+11章详情） |
+| [chapters-ref.md](chapters-ref.md) | 章节速查表（21章+12章+5章详情） |
 | [mermaid-spec.md](mermaid-spec.md) | Mermaid 图表规范（完整版） |
 | [doc-format.md](doc-format.md) | 文档格式规范（完整版） |
 | [self-check-spec.md](self-check-spec.md) | 自检验证详细规格 |
+| [log-extraction-guide.md](log-extraction-guide.md) | 各语言日志提取指南 |
 | [template.md](template.md) | 通用模板 |
 | [build-guide-*.md](build-guide-*.md) | 各项目类型编译指南 |
 

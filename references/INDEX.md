@@ -9,7 +9,7 @@
 | 文件 | 说明 | 优先级 |
 |------|------|--------|
 | [quick-ref.md](quick-ref.md) | **快速参考**：执行预估、策略选择、常用命令 | ⭐⭐⭐ |
-| [chapters-ref.md](chapters-ref.md) | **章节速查**：21章根文档 + 11章模块文档详情 | ⭐⭐⭐ |
+| [chapters-ref.md](chapters-ref.md) | **章节速查**：21章根文档 + 12章模块文档详情 + 5章核心日志文档 | ⭐⭐⭐ |
 
 ### 执行规范
 
@@ -19,6 +19,7 @@
 | [doc-format.md](doc-format.md) | 文档格式规范 | 表格格式、代码块规范、数据库设计格式 |
 | [self-check-spec.md](self-check-spec.md) | 自检验证详细规格 | 检查点 2.5 执行依据 |
 | [project-types-config.md](project-types-config.md) | 项目类型检测配置 | 检查点 1 项目类型识别 |
+| [log-extraction-guide.md](log-extraction-guide.md) | 各语言日志提取指南 | 核心日志文档（5章）生成依据 |
 
 ### 文档模板
 
@@ -55,7 +56,9 @@
 |--------|----------|
 | **检查点 0** 增量检测 | [quick-ref.md](quick-ref.md)（执行策略选择） |
 | **检查点 1** 项目类型确认 | [project-types-config.md](project-types-config.md) |
-| **检查点 2** 结果确认 | - |
+| **阶段: 项目扫描** | [quick-ref.md](quick-ref.md)（依赖提取命令）+ [mermaid-spec.md](mermaid-spec.md)（图表规范） |
+| **阶段: 文档生成** | [chapters-ref.md](chapters-ref.md) + [doc-format.md](doc-format.md) + [log-extraction-guide.md](log-extraction-guide.md)（日志提取） |
+| **检查点 2** 结果确认 | [self-check-spec.md](self-check-spec.md#检查点2结果确认流程) |
 | **检查点 2.5** 自检验证 | [self-check-spec.md](self-check-spec.md) |
 | **检查点 3** 人工更正 | - |
 
@@ -88,7 +91,7 @@ SKILL.md (核心)
     │       └── 执行预估 / 策略选择 / 常用命令
     │
     ├── chapters-ref.md (章节详情)
-    │       └── 根文档 21 章 / 模块文档 11 章
+    │       └── 根文档 21 章 / 模块文档 12 章 / 核心日志文档 5 章
     │
     ├── mermaid-spec.md (图表规范)
     │       └── 依赖图 / ER图 / 流程图 / 时序图 / 类图
@@ -101,6 +104,9 @@ SKILL.md (核心)
     │
     ├── project-types-config.md (类型配置)
     │       └── 8 种项目类型检测
+    │
+    ├── log-extraction-guide.md (日志提取)
+    │       └── 各语言日志模式 / 提取规则 / 调用链扫描
     │
     ├── template.md (通用模板)
     │       └── *-template.md (8 种项目类型模板)
