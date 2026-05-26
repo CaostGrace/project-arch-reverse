@@ -162,6 +162,19 @@ fmt.Println("message")
 
 ## 日志内容处理规则
 
+### 核心日志最小覆盖矩阵 ★
+
+每个核心功能必须覆盖以下4种日志场景中的至少3种，否则标注"日志覆盖不完整"：
+
+| 日志场景 | 对应级别 | 重要性 | 示例 |
+|---------|---------|--------|------|
+| 功能触发 | INFO | 必须 | `"User login started"` |
+| 成功完成 | INFO | 必须 | `"Login success, userId={}"` |
+| 异常捕获 | ERROR | 必须 | `"Login failed" + AuthException` |
+| 降级/回退 | WARN | 推荐 | `"Fallback to cache"` |
+
+> 💡 快速判断：一个核心功能如果有 `触发 + 完成 + 异常` 三条日志，覆盖就算合格。
+
 ### 格式化参数保留
 日志中的格式化参数应保留为占位符：
 - `Log.i(TAG, "userId=%s, status=%d", userId, status)` → 记录为 `"userId={}, status={}"`
