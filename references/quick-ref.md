@@ -13,7 +13,22 @@
 | [self-check-spec.md](self-check-spec.md) | 自检验证详细规格 |
 | [log-extraction-guide.md](log-extraction-guide.md) | 各语言日志提取指南 |
 | [template.md](template.md) | 通用模板 |
-| [build-guide-*.md](build-guide-*.md) | 各项目类型编译指南 |
+| [android-template.md](android-template.md) | Android 项目模板 |
+| [ios-template.md](ios-template.md) | iOS 项目模板 |
+| [java-backend-template.md](java-backend-template.md) | Java 后端项目模板 |
+| [vue-template.md](vue-template.md) | Vue.js 项目模板 |
+| [react-template.md](react-template.md) | React 项目模板 |
+| [flutter-template.md](flutter-template.md) | Flutter 项目模板 |
+| [nodejs-template.md](nodejs-template.md) | Node.js 项目模板 |
+| [harmonyos-template.md](harmonyos-template.md) | HarmonyOS Next 项目模板 |
+| [build-guide-android.md](build-guide-android.md) | Android 编译指南 |
+| [build-guide-ios.md](build-guide-ios.md) | iOS 编译指南 |
+| [build-guide-java-backend.md](build-guide-java-backend.md) | Java 后端编译指南 |
+| [build-guide-vue.md](build-guide-vue.md) | Vue.js 编译指南 |
+| [build-guide-react.md](build-guide-react.md) | React 编译指南 |
+| [build-guide-flutter.md](build-guide-flutter.md) | Flutter 编译指南 |
+| [build-guide-nodejs.md](build-guide-nodejs.md) | Node.js 编译指南 |
+| [build-guide-harmonyos.md](build-guide-harmonyos.md) | HarmonyOS Next 编译指南 |
 
 ## 执行预估
 
@@ -54,6 +69,17 @@
 │
 └─ "项目类型"/"技术栈"
     └─ 只执行检查点1（项目类型检测），输出技术栈分析
+
+### 混合项目/Monorepo 决策 ★
+
+```
+混合项目检测:
+├─ 单一项目类型 → 正常流程
+├─ 多类型签名（如 Android + Flutter 插件）
+│   └─ 识别主类型 + 子类型 → 用户确认模块划分 → 分别使用对应模板
+└─ Monorepo（如 packages/ 下多个独立项目）
+    └─ 每个包独立识别类型+模块 → 生成子根文档 → 根文档含统一索引
+```
 ```
 
 ## 何时使用
@@ -106,6 +132,14 @@
 | L-A 全量生成 | 核心日志文档均不存在 | 为所有核心模块生成日志文档 |
 | L-B 补充生成 | 部分核心模块缺少日志文档 | 生成缺失模块的日志文档 |
 | L-C 增量更新 | 所有核心模块日志文档存在 | 对比代码时间戳，更新变化模块 |
+
+### 混合项目策略（多类型项目）
+
+| 场景 | 策略 | 操作 |
+|------|------|------|
+| Android + Flutter 插件 | 主项目A + 子项目B | 主项目用 android-template，插件部分用 flutter-template，根文档统一索引 |
+| Monorepo（前端+后端） | 分区生成 | 每个包独立生成架构文档，根文档含全局模块依赖图 |
+| 用户手动指定类型 | 以用户为准 | 忽略自动检测结果，使用用户指定类型的模板和配置 |
 
 ## 增量检测命令
 
@@ -174,6 +208,9 @@ cat package.json | grep -E '"dependencies"|"devDependencies"' -A 30 | grep -E '"
 | Mermaid subgraph | 中文名含特殊字符 | 使用字母/数字标识符 |
 | 依赖表格格式 | 用 `---` 对齐列 | 使用 `---:` 或 `:---` 控制对齐 |
 | 模块发现 | 只扫描根目录 build 文件 | 递归扫描到 depth≤5 |
+| 混合项目 | 使用单一模板覆盖所有子项目 | 主类型+子类型分别使用对应模板 |
+| Monorepo | 将所有包合并为一个项目文档 | 每个包独立生成文档，根文档统一索引 |
+| 用户覆盖 | 忽略用户手动指定类型 | 以用户指定为准，使用指定类型的配置和模板 |
 
 ## 输出质量检查点 ★
 

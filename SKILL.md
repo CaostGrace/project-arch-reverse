@@ -70,7 +70,13 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 
 5. ⚠️ **输出检测报告并等待用户确认**（不可跳过）：
    展示：模块清单、已有文档、推荐策略、核心模块列表
-   用户可调整：模块范围、核心模块标记、策略选择
+   用户可覆盖调整：
+   - ✏️ 模块范围：增删模块、排除/包含特定模块
+   - ✏️ 核心模块标记：添加/移除核心标记（自动检测仅供参考）
+   - ✏️ 策略选择：覆盖推荐策略（如强制全量[A]而非增量[C]）
+   - ✏️ 项目类型：覆盖自动检测类型（如将 Android 改为 Flutter）
+   
+   > 用户指定 > 自动检测，用户确认后才进入 CP1
 
 ---
 
@@ -81,6 +87,14 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 1. 文件签名检测（详见 `references/project-types-config.md`）
 2. 加载配置：`references/project-types-config.md`
 3. 确认范围：全部模块 / 指定模块 → 用户确认
+
+**混合项目处理**：当检测到多种项目类型签名时（如 Android + Flutter 插件、Monorepo 含前后端）：
+- 识别主项目类型（最多文件匹配的类型）
+- 列出所有检测到的子类型及其模块范围
+- 用户确认主类型 + 子类型的模块划分
+- 分别使用对应项目类型的模板生成文档
+
+**类型误判回退**：若用户在 CP0/CP1 指定的类型与自动检测结果不一致，**以用户指定为准**，并在扫描阶段使用用户指定类型的配置和模板。
 
 ---
 
@@ -95,7 +109,7 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 | 3 | 循环检测 | 识别循环依赖 |
 | 4 | 导航分析 | nav*.xml / router / App.tsx 等 |
 | 5 | 生成图表 | Mermaid — ⚠️ 每节点标注方法名+文件:行号（见 `references/mermaid-spec.md`） |
-| 6 | 加载模板 | `references/{项目类型}-template.md` |
+| 6 | 加载模板 | 根据项目类型加载 `references/{类型}-template.md`（见参考文档表格） |
 
 **扫描命令速查**：
 
@@ -218,6 +232,10 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 | 模块文档生成失败 | 记录 + 继续下一个 + 最终报告 |
 | 核心日志提取失败 | 记录 + 标记待处理 + 继续 |
 | 日志语句不足 (<3) | 生成文档但标注"日志覆盖不完整" |
+| 混合项目类型 | 识别主类型+子类型，用户确认模块划分，分别使用对应模板 |
+| Monorepo多包 | 每个包独立识别类型+模块，生成子根文档+统一索引 |
+| 用户覆盖类型 | 以用户指定为准，使用指定类型的配置和模板 |
+| CP1类型误判 | 用户可在CP0/CP1纠正，确认后使用纠正后的类型 |
 
 ## 参考文档
 
@@ -231,8 +249,22 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段】 → 【生成阶段
 | [references/project-types-config.md](references/project-types-config.md) | 类型检测 + 文件签名 + 特有分析 |
 | [references/log-extraction-guide.md](references/log-extraction-guide.md) | 各语言日志提取指南（含扫描命令） |
 | [references/template.md](references/template.md) | 通用模板 |
-| [references/*-template.md](references/) | 各项目类型详细模板（8个） |
-| [references/build-guide-*.md](references/) | 各项目类型编译指南（8个） |
+| [references/android-template.md](references/android-template.md) | Android 项目模板 |
+| [references/ios-template.md](references/ios-template.md) | iOS 项目模板 |
+| [references/java-backend-template.md](references/java-backend-template.md) | Java 后端项目模板 |
+| [references/vue-template.md](references/vue-template.md) | Vue.js 项目模板 |
+| [references/react-template.md](references/react-template.md) | React 项目模板 |
+| [references/flutter-template.md](references/flutter-template.md) | Flutter 项目模板 |
+| [references/nodejs-template.md](references/nodejs-template.md) | Node.js 项目模板 |
+| [references/harmonyos-template.md](references/harmonyos-template.md) | HarmonyOS Next 项目模板 |
+| [references/build-guide-android.md](references/build-guide-android.md) | Android 编译指南 |
+| [references/build-guide-ios.md](references/build-guide-ios.md) | iOS 编译指南 |
+| [references/build-guide-java-backend.md](references/build-guide-java-backend.md) | Java 后端编译指南 |
+| [references/build-guide-vue.md](references/build-guide-vue.md) | Vue.js 编译指南 |
+| [references/build-guide-react.md](references/build-guide-react.md) | React 编译指南 |
+| [references/build-guide-flutter.md](references/build-guide-flutter.md) | Flutter 编译指南 |
+| [references/build-guide-nodejs.md](references/build-guide-nodejs.md) | Node.js 编译指南 |
+| [references/build-guide-harmonyos.md](references/build-guide-harmonyos.md) | HarmonyOS Next 编译指南 |
 
 ## 资源使用原则
 
