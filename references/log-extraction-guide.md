@@ -2,6 +2,36 @@
 
 本文档定义从各语言源代码中识别和提取日志语句的规则，用于生成核心日志文档（第3章：核心功能日志清单）。
 
+## 快速扫描命令
+
+针对不同项目类型的日志快速扫描：
+
+```bash
+# Android (Kotlin/Java) — 提取所有 Log.xxx 调用
+grep -rn "Log\.[diewv]" --include="*.kt" --include="*.java" . | head -50
+
+# iOS (Swift) — 提取日志调用
+grep -rn "os_log\|Logger\.\|NSLog\|print(" --include="*.swift" . | head -50
+
+# Vue/React (JS/TS) — 提取 console 和 logger 调用
+grep -rn "console\.\(log\|error\|warn\|info\|debug\)\|logger\." --include="*.ts" --include="*.tsx" --include="*.vue" . | head -50
+
+# Java 后端 — 提取 log/LOGGER 调用
+grep -rn "log\.\(debug\|info\|warn\|error\)\|LOGGER\." --include="*.java" . | head -50
+
+# Flutter (Dart) — 提取日志调用
+grep -rn "debugPrint\|log(\|logger\.\|print(" --include="*.dart" . | head -50
+
+# HarmonyOS (ArkTS) — 提取 hilog/console 调用
+grep -rn "hilog\.\|console\." --include="*.ets" --include="*.ts" . | head -50
+
+# Python — 提取 logging 调用
+grep -rn "logging\.\|logger\.\(debug\|info\|warn\|error\)" --include="*.py" . | head -50
+
+# Go — 提取 log 调用
+grep -rn "log\.\(Debug\|Info\|Warn\|Error\|Printf\)\|fmt\.Println" --include="*.go" . | head -50
+```
+
 ## 提取原则
 
 1. **按调用链扫描**：从核心功能的入口方法开始，沿着调用链逐层扫描所有被调用方法
