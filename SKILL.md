@@ -402,8 +402,8 @@ description: "逆向分析项目架构。自动检测项目类型（Android/iOS/
 | `references/project-types-config.md` | 类型检测 + 文件签名 + 特有分析 |
 | `references/log-extraction-guide.md` | 各语言日志提取指南（含扫描命令） |
 | `references/template.md` | 通用模板 |
-| 各类型模板 | `android/ios/java-backend/vue/react/flutter/nodejs/harmonyos-template.md` |
-| 各编译指南 | `build-guide-android/ios/java-backend/vue/react/flutter/nodejs/harmonyos.md` |
+| 各类型模板 | `references/android-template.md` `references/ios-template.md` `references/java-backend-template.md` `references/vue-template.md` `references/react-template.md` `references/flutter-template.md` `references/nodejs-template.md` `references/harmonyos-template.md` |
+| 各编译指南 | `references/build-guide-android.md` `references/build-guide-ios.md` `references/build-guide-java-backend.md` `references/build-guide-vue.md` `references/build-guide-react.md` `references/build-guide-flutter.md` `references/build-guide-nodejs.md` `references/build-guide-harmonyos.md` |
 
 ---
 
