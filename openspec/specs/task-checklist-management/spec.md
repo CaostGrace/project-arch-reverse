@@ -76,13 +76,32 @@
 - **WHEN** 某模块全部 12 章任务完成
 - **THEN** 系统 SHALL 更新该模块标题行的进度条为 100%，然后生成该模块的日志文档（如为核心模块）
 
-### Requirement: Record skip reasons
-系统 SHALL 在任务清单中记录 `[!]` 跳过项的失败原因。
+### Requirement: Record skip reasons for unrecoverable errors only
+系统 SHALL 仅在不可恢复错误时使用 `[!]` 跳过状态。
 
-#### Scenario: Record skip reason with context
-- **WHEN** 任务标记为 `[!]`（跳过）
-- **THEN** 系统 SHALL 在任务清单底部的"跳过清单"中追加条目，格式：`[!] <模块> §<编号>: <错误类型> @ <代码位置>`
+#### Scenario: [!] for unrecoverable errors
+- **WHEN** 源码文件被删除、磁盘空间不足、编码异常等导致无法生成
+- **THEN** 系统 SHALL 标记 `[!]`，在跳过清单中记录：`[!] <模块> §<编号>: <错误类型> @ <代码位置>`
+
+#### Scenario: [!] NOT for volume or user request
+- **WHEN** 存在大量待生成文档或用户表示"够了"
+- **THEN** 系统 SHALL NOT 使用 `[!]` 跳过。系统 SHALL 继续逐项完成
 
 #### Scenario: Skip list persists across sessions
 - **WHEN** Agent 恢复执行
-- **THEN** 系统 SHALL 保留已有跳过清单，新跳过项追加到末尾
+- **THEN** 系统 SHALL 保留已有跳过清单（不可恢复错误的记录），新跳过项追加到末尾
+
+### Requirement: CP4 generation iron rules
+CP4 生成阶段 SHALL 遵守禁止行为清单。
+
+#### Scenario: Prohibit asking user about scope
+- **WHEN** 发现未生成文档数量多
+- **THEN** 系统 SHALL NOT 询问"是否继续"。系统 SHALL 自动继续分批生成
+
+#### Scenario: Prohibit partial completion language
+- **WHEN** 部分文档已生成但仍有未完成项
+- **THEN** 系统 SHALL NOT 输出"基础完成"、"核心完成"、"可后续补充"等暗示可停止的措辞
+
+#### Scenario: Batch generation completes all
+- **WHEN** 采用分批策略（≤20/批）
+- **THEN** 系统 SHALL 每批完成后自动继续下一批，直至全部完成，不询问用户

@@ -16,27 +16,32 @@
 - **THEN** 系统 SHALL 跳过 CP2.5 → 直接进入 CP3（人工更正）
 
 ### Requirement: Execute comprehensive self-check with no iteration limit
-系统 SHALL 执行自检循环直到全部检查项通过，无循环次数上限。唯一终止条件是全部检查项通过或用户主动确认接受残留。
+系统 SHALL 执行自检循环直到全部检查项通过。文档缺失类问题不可通过"用户接受"退出。
 
 #### Scenario: Self-check passes on first attempt
-- **WHEN** 第 1 次自检全部 6 项通过
+- **WHEN** 第 1 次自检全部 8 项通过
 - **THEN** 系统 SHALL 报告"自检全部通过"，流程完成
 
-#### Scenario: Self-check finds auto-fixable issues
-- **WHEN** 自检发现可自动修复的问题（如章节缺失、依赖不一致、聚合错误）
+#### Scenario: Self-check finds document-missing auto-fixable issues
+- **WHEN** 自检发现模块缺失、日志文档缺失、章节缺失
+- **THEN** 系统 SHALL 🔴 必须立即修复，不可询问用户，不可标记"用户接受"。修复后重新全项自检
+
+#### Scenario: Self-check finds other auto-fixable issues
+- **WHEN** 自检发现依赖不一致、聚合错误等其他可自动修复问题
 - **THEN** 系统 SHALL 立即修复 → 重新执行全项自检
 
 #### Scenario: Same issue fails auto-fix 3 times
 - **WHEN** 同一检查项的同一问题经 3 次自动修复仍无法通过
-- **THEN** 系统 SHALL 标记该问题为阻塞项 → 委托 CP3 处理 → CP3 完成后回归 CP2.5 重新自检
+- **THEN** 系统 SHALL 标记该问题为阻塞项 → 委托 CP7 处理 → CP7 完成后回归 CP6 重新自检
 
 #### Scenario: Five full rounds reached with remaining blockers
-- **WHEN** 全轮自检累计 5 轮后仍有阻塞项
+- **WHEN** 全轮自检累计 5 轮后仍有阻塞项（非文档缺失类）
 - **THEN** 系统 SHALL 暂停并请求用户决策：继续自检、降级接受残留、或永久跳过该检查项
 
-#### Scenario: User accepts residual issues
-- **WHEN** 用户通过 CP3 明确接受某检查项的残留问题
-- **THEN** 系统 SHALL 该检查项标记为"用户接受"，不再对该项进行验证
+#### Scenario: User accepts residual only for CP7 delegated items
+- **WHEN** CP7 处理完成后仍存在无法修复的阻塞项（架构判断/非标准结构）
+- **THEN** 系统 SHALL 允许用户将该阻塞项标记为"用户接受"，后续自检跳过
+- **AND** 系统 SHALL NOT 允许将文档缺失类问题标记为"用户接受"
 
 ### Requirement: Check module coverage and completeness (Step 1)
 系统 SHALL 验证所有模块文档的覆盖率和每文档 12 章完整性。
@@ -171,7 +176,7 @@
 
 #### Scenario: Root doc chapter missing
 - **WHEN** 根文档章节缺失
-- **THEN** 系统 SHALL 立即生成缺失章节
+- **THEN** 系统 SHALL 立即生成缺失章节，不询问用户
 
 #### Scenario: Mermaid chart syntax error
 - **WHEN** 发现 Mermaid 图表语法错误（如节点未定义、括号冲突）
@@ -184,6 +189,10 @@
 #### Scenario: Dependency relation error
 - **WHEN** 发现模块依赖关系错误
 - **THEN** 系统 SHALL 修正依赖关系描述，重新生成相关图表
+
+#### Scenario: Document missing is never accepted as residual
+- **WHEN** 自检发现模块文档/日志文档缺失
+- **THEN** 系统 SHALL 🔴 必须生成，不可标记为"用户接受残留"或"基础完成"
 
 ### Requirement: Mermaid syntax secondary validation (Step 7)
 系统 SHALL 在 CP6 自检中对所有文档的 Mermaid 代码块执行二次语法校验。
