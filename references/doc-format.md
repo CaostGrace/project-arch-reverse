@@ -76,9 +76,63 @@ flowchart TD
 | 函数/类 | 文件:行号 | 角色 | 复杂度 | 建议 |
 |---------|----------|------|--------|------|
 | LegacyService.process() | legacy/LegacyService.java:34 | dead | 8 | 确认后删除 |
-| unusedConfig() | config/AppConfig.kt:56 | dead | 3 | 标记 @Deprecated |
 
-**统计**: 死函数 X/总数 Y = Z%  |  死模块: [list]
+**统计**: 死函数 X/总数 Y = Z%
+```
+
+## 日志分析文档格式 ★
+
+### 执行路径日志追踪表 (§3)
+
+```markdown
+### <核心能力名> — 执行路径日志追踪
+
+| 步骤 | 方法 | 日志存在 | 级别 | 日志内容 | 文件:行号 |
+|------|------|:---:|------|---------|----------|
+| 1 | submit() | ✅ | INFO | "Order submitted" | OrderActivity.kt:56 |
+| 2 | createOrder() | ✅ | DEBUG | "Creating: {id}" | OrderVM.kt:34 |
+| 3 | validateStock() | ❌ | — | [日志缺失] | Validator.kt:12 |
+
+**日志覆盖率**: X/Y = Z%
+```
+
+### 错误传播表 (§4)
+
+```markdown
+### <核心能力名> — 错误传播分析
+
+| 步骤 | 方法 | 可能异常 | 捕获? | 日志表现 | 传播方式 |
+|------|------|---------|:---:|---------|---------|
+| 3 | validate() | StockNotFound | ✅ | [WARN] "Stock: {SKU}" | return false |
+| 4 | calculate() | ArithmeticEx | ❌ | [无日志] | throws↑ |
+| 5 | saveToDB() | SQLException | ✅ | [ERROR] "DB: {msg}" | wrap→OrderEx |
+```
+
+### 日志覆盖评估 (§5)
+
+```markdown
+### 日志覆盖评估
+
+| 模块 | 核心函数数 | 有日志 | 缺失 | 覆盖率 |
+|------|----------|--------|------|:---:|
+| order | 12 | 9 | 3 | 75% |
+
+**缺失日志的关键函数**:
+| 函数 | 文件:行号 | 原因 | 建议 |
+|------|----------|------|------|
+| validateStock() | Validator.kt:12 | 无日志 | 添加 INFO 日志记录校验结果 |
+```
+
+### 故障排查决策树 (§8)
+
+```markdown
+### 故障: <日志关键词+代码位置>
+
+**可能原因 1**: <从代码分支推导>
+- 验证: <grep 命令 / 检查项>
+- 修复: <具体方案>
+
+**可能原因 2**: ...
 ```
 
 ## 格式自检清单
