@@ -4,16 +4,16 @@
 
 ## 项目类型检测配置
 
-| 项目类型 | 检测标准 | 配置文件 |
-|----------|----------|----------|
-| Android | `build.gradle`、`AndroidManifest.xml`、`.kt` 文件 | `build.gradle.kts`, `settings.gradle.kts` |
-| iOS | `.xcworkspace`、`.xcodeproj`、`.swift` 文件 | `Podfile`, `Package.swift` |
-| Java 后端 | `pom.xml`、`build.gradle`、Spring Boot 模式 | `pom.xml`, `application.yml` |
-| Vue.js | `package.json` 含 vue、`.vue` 文件 | `package.json`, `vite.config.ts` |
-| React | `package.json` 含 react、`.jsx`/`.tsx` 文件 | `package.json`, `next.config.js` |
-| Flutter | `pubspec.yaml`、`.dart` 文件 | `pubspec.yaml` |
-| Node.js | `package.json`、`.js`/`.ts` 后端文件 | `package.json`, `server.js` |
-| HarmonyOS Next | `hvigorfile.ts`、`oh-package.json5`、`.ets` 文件、AppScope 目录 | `app.json5`, `module.json5`, `hvigorfile.ts` |
+| 项目类型 | 检测标准 | 配置文件 | codegraph 支持 |
+|----------|----------|----------|:---:|
+| Android | `build.gradle`、`AndroidManifest.xml`、`.kt` 文件 | `build.gradle.kts`, `settings.gradle.kts` | ✅ Kotlin/Java |
+| iOS | `.xcworkspace`、`.xcodeproj`、`.swift` 文件 | `Podfile`, `Package.swift` | ✅ Swift |
+| Java 后端 | `pom.xml`、`build.gradle`、Spring Boot 模式 | `pom.xml`, `application.yml` | ✅ Java |
+| Vue.js | `package.json` 含 vue、`.vue` 文件 | `package.json`, `vite.config.ts` | ✅ TypeScript/JS |
+| React | `package.json` 含 react、`.jsx`/`.tsx` 文件 | `package.json`, `next.config.js` | ✅ TypeScript/JS |
+| Flutter | `pubspec.yaml`、`.dart` 文件 | `pubspec.yaml` | ✅ Dart |
+| Node.js | `package.json`、`.js`/`.ts` 后端文件 | `package.json`, `server.js` | ✅ TypeScript/JS |
+| HarmonyOS Next | `hvigorfile.ts`、`oh-package.json5`、`.ets` 文件、AppScope 目录 | `app.json5`, `module.json5`, `hvigorfile.ts` | ⚠️ ArkTS (降级测试) |
 
 ## 各项目类型特定章节
 
