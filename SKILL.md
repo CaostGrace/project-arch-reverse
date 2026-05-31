@@ -245,7 +245,7 @@ CP 编号对照: 旧 CP0/CP1/CP1.5/扫描/生成/CP2/CP2.5/CP3 → 新 CP0-7
 | 5 | **入口点扫描** ★ | 按项目类型加载 `project-types-config.md` 入口目录 → grep 搜索每个模块源码 → 输出入口清单（方法名 + 文件:行号 + 触发类型） |
 | 6 | 导航分析 | nav*.xml / router / App.tsx 等 |
 | 7 | 生成图表 | Mermaid — ⚠️ 每节点标注方法名+文件:行号（见 `references/mermaid-spec.md`） |
-| 8 | 加载模板 | 根据项目类型加载 `references/{类型}-template.md`（见参考文档表格） |
+| 8 | 加载模板 | 按类型加载模板: `android-template.md` → `ios-template.md` → `java-backend-template.md` → `vue-template.md` → `react-template.md` → `flutter-template.md` → `nodejs-template.md` → `harmonyos-template.md` |
 
 > ★ **入口点扫描**：搜索系统级入口（ContentProvider、@Scheduled、AppDelegate 等），按触发类型分为 UI触发/系统触发/外部事件。入口作为时序图的真正起点，标注触发条件。
 
