@@ -118,6 +118,46 @@
 
 > 🔄 **模块优先原则**：所有策略（A/B/C）均先按拓扑排序生成模块文档，再聚合生成根文档。
 > 📋 **任务清单机制**：生成阶段前创建章节级 `.task-checklist.md`，逐章执行并持久化进度。中断后可从第一个未完成任务恢复。
+> 🧠 **codegraph 优先**：CP1.5 自动检测 `@optave/codegraph`，可用时替代手动扫描步骤；不可用时降级为手动模式。
+
+## codegraph 命令速查
+
+```bash
+# 安装
+npm install -g @optave/codegraph
+
+# 构建知识图谱（首次全量，后续增量 < 1s）
+cd <project> && codegraph build
+
+# 检测是否已安装
+npm ls -g @optave/codegraph
+
+# Mermaid 导出
+codegraph plot --mermaid
+
+# 参考资料
+# https://github.com/optave/ops-codegraph-tool
+```
+
+### codegraph 降级决策树
+
+```
+CP1.5 codegraph 检测:
+├── npm --version
+│   ├── npm 可用 → 继续
+│   │   ├── npm ls -g @optave/codegraph 返回 0
+│   │   │   ├── .codegraph/graph.db 存在 → ✅ codegraph 分析模式
+│   │   │   └── graph.db 不存在 → codegraph build
+│   │   │       ├── 成功 → ✅ codegraph 分析模式
+│   │   │       └── 失败 → ⚠️ 降级: 手动 8 步扫描
+│   │   └── npm ls 返回非 0 → npm install -g @optave/codegraph
+│   │       ├── 成功 → codegraph build → (同上)
+│   │       └── 失败 → ⚠️ 降级: 手动 8 步扫描
+│   └── npm 不可用 → 询问"是否安装 Node.js？"
+│       ├── 用户同意 → 安装 Node.js → 继续 codegraph 检测
+│       └── 用户拒绝 → ⚠️ 降级: 手动 8 步扫描
+└── 用户 CP0 指定"跳过 codegraph" → ⚠️ 强制手动扫描
+```
 
 | 策略 | 条件 | 操作（模块→根） |
 |------|------|-----------------|

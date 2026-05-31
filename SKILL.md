@@ -90,6 +90,7 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段 + 拓扑排序】 → 
    - ✏️ 核心模块标记：添加/移除核心标记（自动检测仅供参考）
    - ✏️ 策略选择：覆盖推荐策略（如强制全量[A]而非增量[C]）
    - ✏️ 项目类型：覆盖自动检测类型（如将 Android 改为 Flutter）
+   - ✏️ **codegraph**：跳过 codegraph 分析（强制手动扫描模式）
    
    > 用户指定 > 自动检测，用户确认后才进入 CP1
 
@@ -110,6 +111,47 @@ CP0 增量检测 → CP1 类型确认 → 【扫描阶段 + 拓扑排序】 → 
 - 分别使用对应项目类型的模板生成文档
 
 **类型误判回退**：若用户在 CP0/CP1 指定的类型与自动检测结果不一致，**以用户指定为准**，并在扫描阶段使用用户指定类型的配置和模板。
+
+---
+
+### CP1.5：codegraph 可用性检测（推荐，可跳过）
+
+> 优先使用 `@optave/codegraph` (v3.11.1, 34 语言支持) 作为分析引擎。不可用时自动降级为手动扫描。
+
+```
+检测流程:
+  npm --version
+    ├── npm 可用 → 继续 codegraph 检测
+    │   npm ls -g @optave/codegraph
+    │     ├── 已安装 → 检查 .codegraph/graph.db
+    │     │   ├── 存在 → ✅ codegraph 分析模式
+    │     │   └── 不存在 → codegraph build → 成功则分析模式
+    │     └── 未安装 → npm install -g @optave/codegraph → codegraph build
+    │                   ├── 成功 → ✅ codegraph 分析模式
+    │                   └── 失败 → ⚠️ 降级: 手动扫描模式
+    └── npm 不可用 → 询问用户"未检测到 npm 环境，是否安装 Node.js？"
+          ├── 用户同意 → 安装 Node.js → 继续 codegraph 检测
+          └── 用户拒绝 → ⚠️ 降级: 手动扫描模式（跳过 codegraph）
+```
+
+**codegraph 分析模式下扫描阶段的替代关系**：
+
+| 手动步骤 | codegraph 替代 |
+|----------|---------------|
+| Step 2 构建解析 | graph.db 查询模块间调用边 |
+| Step 3 循环检测 | 图分析 SCC 检测 |
+| Step 5 入口点扫描 | 节点角色 entry |
+| Step 7 生成图表 | `codegraph plot --mermaid` 导出 |
+| 核心功能判定 | 节点角色 core + 复杂度指标 |
+
+**降级回退规则**：
+- npm 不可用且用户拒绝安装 → 跳过 codegraph
+- codegraph 安装失败 → 完整 8 步手动扫描
+- `codegraph build` 失败 → 完整 8 步手动扫描
+- 用户 CP0 指定"跳过 codegraph" → 完整 8 步手动扫描
+- 降级不报错，报告中标注"codegraph 不可用，使用手动分析"
+
+安装速查：`npm install -g @optave/codegraph` | 构建：`codegraph build` | 文档：https://github.com/optave/ops-codegraph-tool
 
 ---
 
