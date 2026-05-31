@@ -168,3 +168,46 @@
 #### Scenario: UI entry annotation format
 - **WHEN** 时序图描画 UI 触发流程
 - **THEN** 系统 SHALL 在首步使用 `Note over` 标注交互描述，格式：`Note over UI: UI触发: <交互描述>`
+
+### Requirement: Auto-validate and fix Mermaid syntax errors
+系统 SHALL 在生成Mermaid代码块后自动执行语法检测和修复，确保生成的图表在任何渲染器中无语法错误。
+
+#### Scenario: Fix angle brackets in message text
+- **WHEN** 时序图消息包含 `<>` 且未用双引号包裹
+- **THEN** 系统 SHALL 自动用双引号包裹该消息文本
+
+#### Scenario: Fix hash sign in message text
+- **WHEN** 时序图消息包含 `#` 且未用双引号包裹
+- **THEN** 系统 SHALL 自动用双引号包裹
+
+#### Scenario: Fix empty line in loop block
+- **WHEN** 时序图 loop/alt/opt 块内存在孤立空行
+- **THEN** 系统 SHALL 删除块内空行
+
+#### Scenario: Fix bare parentheses in node text
+- **WHEN** 流程图节点文本含 `()` 但未用双引号包裹
+- **THEN** 系统 SHALL 自动添加双引号
+
+#### Scenario: Fix cylinder shape conflict
+- **WHEN** 使用 `[( )]` 圆柱体形状且内括号导致冲突
+- **THEN** 系统 SHALL 替换为 `[""]` 矩形形状
+
+#### Scenario: Fix undefined node reference
+- **WHEN** 箭头引用未定义的节点ID
+- **THEN** 系统 SHALL 补充占位节点定义
+
+#### Scenario: Fix ER entity hyphen
+- **WHEN** ER图实体名包含连字符 `-`
+- **THEN** 系统 SHALL 替换为下划线
+
+#### Scenario: Fix participant special characters
+- **WHEN** participant 别名含 `::` 且未用双引号包裹
+- **THEN** 系统 SHALL 自动用双引号包裹
+
+#### Scenario: Fix subgraph special characters
+- **WHEN** subgraph 标识符含特殊字符
+- **THEN** 系统 SHALL 替换为下划线
+
+#### Scenario: All Mermaid blocks pass validation
+- **WHEN** 所有 Mermaid 块通过 10 条规则检测
+- **THEN** 系统 SHALL 输出"✅ Mermaid 语法检测通过"

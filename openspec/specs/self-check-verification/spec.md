@@ -184,3 +184,37 @@
 #### Scenario: Dependency relation error
 - **WHEN** 发现模块依赖关系错误
 - **THEN** 系统 SHALL 修正依赖关系描述，重新生成相关图表
+
+### Requirement: Mermaid syntax secondary validation (Step 7)
+系统 SHALL 在 CP6 自检中对所有文档的 Mermaid 代码块执行二次语法校验。
+
+#### Scenario: Rescan all mermaid blocks
+- **WHEN** CP6 Step 7 执行
+- **THEN** 系统 SHALL 提取所有 ` ```mermaid ` 代码块，逐块执行 10 条正则规则扫描
+
+#### Scenario: Fix newly found mermaid issues
+- **WHEN** Step 7 发现门禁1未覆盖的新 Mermaid 语法问题
+- **THEN** 系统 SHALL 自动修复 → 重新自检；同问题 3 次失败 → 标记阻塞 → 委托 CP7
+
+### Requirement: Document structure integrity check (Step 8)
+系统 SHALL 在 CP6 自检中对文档结构、表格、链接、代码块执行全局校验。
+
+#### Scenario: Global table column validation
+- **WHEN** CP6 Step 8 执行
+- **THEN** 系统 SHALL 对所有文档的表格逐表校验表头/分隔行/数据行的列数一致性
+
+#### Scenario: Internal link validity check
+- **WHEN** CP6 Step 8 执行
+- **THEN** 系统 SHALL 提取所有 Markdown 相对链接，验证目标文件存在
+
+#### Scenario: Code block validation
+- **WHEN** CP6 Step 8 执行
+- **THEN** 系统 SHALL 检查代码块语言标识合法性和闭合配对
+
+#### Scenario: Empty chapter and heading level check
+- **WHEN** CP6 Step 8 执行
+- **THEN** 系统 SHALL 检测空章节、标题层级跳跃、引用块闭合
+
+#### Scenario: Aggregate skip items from both gates
+- **WHEN** CP6 最终报告生成
+- **THEN** 系统 SHALL 汇总门禁1和门禁2的全部跳过项，含文档位置、问题类型、跳过原因
