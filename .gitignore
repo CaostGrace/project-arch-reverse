@@ -1,0 +1,9 @@
+# IDE & Editor
+.claude/
+.codebuddy/
+.idea/
+.vscode/
+
+# OpenSpec / SpecKit config
+.specify/
+CODEBUDDY.md
