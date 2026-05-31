@@ -216,6 +216,45 @@ sequenceDiagram
 - `Note over X,Y` - 标注跨参与者的信息
 - **每个消息箭头都标注方法名，每个 participant 都用 Note 标注文件路径**
 
+### 入口标注规范 ★
+
+> 时序图首步必须标注入口的触发类型和条件，让调用链可追溯到真正的系统起点。
+
+**三种入口标注格式**：
+
+```mermaid
+%% UI触发入口
+Note over UI: UI触发: 按钮点击 / 页面进入 / 表单提交
+
+%% 系统触发入口
+Note over Sys: 系统触发: 网络可用 / 定时任务(cron) / 后台拉取
+
+%% 外部事件入口
+Note over Ext: 外部事件: FCM推送 / Kafka消息 / URL Scheme
+```
+
+**入口参与者命名规范**：
+- UI触发 → participant 为具体的 UI 组件（Page/Composable/Activity）
+- 系统触发 → participant 为系统调度器名称（WorkManager/@Scheduled/BGTaskScheduler）
+- 外部事件 → participant 为事件源名称（FCM/Kafka/BroadcastReceiver）
+
+**入口标注示例（Android ContentProvider）**：
+```mermaid
+sequenceDiagram
+    participant Ext as ContentResolver (外部)
+    participant Provider as NewsProvider
+    participant Repo as NewsRepository
+    participant API as RemoteAPI
+
+    Note over Ext: 外部事件: 其他应用 query 请求
+    Ext->>Provider: query(uri, projection)
+    Provider->>Repo: getNews()
+    Repo->>API: GET /api/news
+    API-->>Repo: NewsDTO
+    Repo-->>Provider: Cursor
+    Provider-->>Ext: queryResult
+```
+
 ### 步骤详解表格式（必需）★
 
 每个时序图下方必须附带步骤详解表：

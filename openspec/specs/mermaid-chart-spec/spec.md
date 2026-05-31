@@ -153,3 +153,18 @@
 #### Scenario: Index links to module document for detail
 - **WHEN** 索引中某功能在根文档 §12.3 聚合展示
 - **THEN** 系统 SHALL 同时标注"来源模块文档"列，指向对应模块文档 §6 的具体功能小节
+
+### Requirement: Annotate entry trigger type in all sequence diagrams
+所有时序图 SHALL 在首步标注入口的触发类型（UI/系统/外部事件）。
+
+#### Scenario: System entry annotation format
+- **WHEN** 时序图描画系统触发流程
+- **THEN** 系统 SHALL 在首步使用 `Note over` 标注触发条件，格式：`Note over <参与者>: 系统触发: <条件>`
+
+#### Scenario: External event annotation format
+- **WHEN** 时序图描画外部事件流程
+- **THEN** 系统 SHALL 在首步使用 `Note over` 标注事件来源，格式：`Note over <参与者>: 外部事件: <来源>`
+
+#### Scenario: UI entry annotation format
+- **WHEN** 时序图描画 UI 触发流程
+- **THEN** 系统 SHALL 在首步使用 `Note over` 标注交互描述，格式：`Note over UI: UI触发: <交互描述>`
