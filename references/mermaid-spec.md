@@ -274,6 +274,84 @@ sequenceDiagram
 | 2  | SearchService | SearchRepository | `searchContent(String q)` | `q`: 查询字符串     | `SearchResult` | `data/SearchRepository.ts:34`          | 数据检索   |
 | 3  | SearchService | (更新)             | `updateState`             | -              | `void`         | -                                      | 更新UI状态 |
 
+## 跨模块时序图（根文档 §12.4 用）★
+
+用于展示跨越多个模块的端到端业务流程。参与者来自不同模块，用 `box` 分组标注所属模块。
+
+### 格式要求
+
+```
+- 参与者数量：≥ 4 个，来自 ≥ 2 个模块
+- box 分组：按模块对参与者分组，如 `box "order模块" ... end`
+- 消息标注：方法名 + `所属模块: 文件路径:行号`
+- 步骤详解表：新增"所属模块"列为第 2 列（共 9 列）
+- 调用步骤数：≥ 6 步（不含返回箭头）
+- 分层覆盖：跨模块但每模块内完整分层（表现层→业务层→数据层）
+```
+
+### 示例
+
+```mermaid
+sequenceDiagram
+    box "app模块"
+        participant UI as MainActivity
+    end
+    box "order模块"
+        participant OrderSvc as OrderService
+        participant OrderRepo as OrderRepository
+    end
+    box "payment模块"
+        participant PayLogic as PaymentLogic
+        participant PayAPI as PaymentAPI
+    end
+
+    UI->>OrderSvc: createOrder(items)
+    Note right of OrderSvc:  order模块: order/OrderService.java:56
+    OrderSvc->>OrderRepo: saveOrder(order)
+    Note right of OrderRepo:  order模块: order/OrderRepository.kt:89
+    OrderRepo-->>OrderSvc: savedOrder
+    OrderSvc->>PayLogic: processPayment(orderId)
+    Note right of PayLogic:  payment模块: payment/PaymentLogic.java:34
+    PayLogic->>PayAPI: POST /pay
+    Note right of PayAPI:  payment模块: payment/PaymentAPI.ts:102
+    PayAPI-->>PayLogic: PaymentResult
+    PayLogic-->>OrderSvc: paymentStatus
+    OrderSvc-->>UI: orderResult
+```
+
+### 步骤详解表（9 列）★
+
+| 步骤 | 所属模块 | 调用者 | 被调用者 | 方法签名 | 参数 | 返回 | 代码位置 | 说明 |
+|------|----------|--------|----------|----------|------|------|----------|------|
+| 1 | app | MainActivity | OrderService | `createOrder(items)` | `items`: 订单项 | `void` | `order/OrderService.java:56` | 触发下单 |
+| 2 | order | OrderService | OrderRepository | `saveOrder(order)` | `order`: 订单对象 | `OrderEntity` | `order/OrderRepository.kt:89` | 持久化订单 |
+| 3 | order | OrderRepository | OrderService | (返回) | — | `savedOrder` | — | 返回已保存订单 |
+| 4 | order | OrderService | PaymentLogic | `processPayment(orderId)` | `orderId`: 订单ID | `void` | `payment/PaymentLogic.java:34` | 发起支付 |
+| 5 | payment | PaymentLogic | PaymentAPI | `POST /pay` | `body`: 支付请求 | `PaymentDTO` | `payment/PaymentAPI.ts:102` | HTTP 支付请求 |
+| 6 | payment | PaymentAPI | PaymentLogic | (返回) | — | `PaymentResult` | — | 支付结果 |
+| 7 | payment | PaymentLogic | OrderService | (返回) | — | `paymentStatus` | — | 支付状态 |
+| 8 | order | OrderService | MainActivity | (返回) | — | `orderResult` | — | 结果回传 |
+
+### 关键代码示例（必需）★
+
+```java
+// 📁 order模块: order/OrderService.java:56 - 下单入口
+public void createOrder(List<Item> items) {
+    Order order = new Order(items);
+    OrderEntity entity = orderRepository.saveOrder(order);  // L58
+    PaymentLogic.processPayment(entity.getId());            // L59
+}
+```
+
+```java
+// 📁 payment模块: payment/PaymentLogic.java:34 - 支付处理
+public PaymentResult processPayment(String orderId) {
+    PaymentRequest req = new PaymentRequest(orderId);
+    PaymentDTO dto = paymentAPI.execute(req);              // L36
+    return new PaymentResult(dto);                          // L37
+}
+```
+
 ## 数据流图
 
 用于展示数据在各组件间的流转过程。**每条消息必须标注方法名，每个参与者必须用 Note 标注代码位置**。

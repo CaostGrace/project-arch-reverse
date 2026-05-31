@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Execute CP2 result confirmation
 系统 SHALL 在文档生成完成后展示结果并等待用户反馈（CP2）。
@@ -38,6 +38,8 @@
 - **WHEN** 用户通过 CP3 明确接受某检查项的残留问题
 - **THEN** 系统 SHALL 该检查项标记为"用户接受"，不再对该项进行验证
 
+## MODIFIED Requirements
+
 ### Requirement: Check module coverage and completeness (Step 1)
 系统 SHALL 验证所有模块文档的覆盖率和每文档 12 章完整性。
 
@@ -52,10 +54,6 @@
 #### Scenario: Module document has missing chapters
 - **WHEN** 某模块文档章节数不足 12 或存在占位符
 - **THEN** 系统 SHALL 补充缺失章节 → 重新自检
-
-#### Scenario: Task checklist comparison
-- **WHEN** `.task-checklist.md` 存在
-- **THEN** 系统 SHALL 对比任务清单预期任务数 vs `[x]` 完成数 → `[!]` 跳过项列为"已知不完整" → 未执行的 `[ ]` 项列为严重缺失并立即生成
 
 ### Requirement: Verify inter-module dependency consistency (Step 2)
 系统 SHALL 交叉验证模块间依赖声明的一致性。
@@ -124,6 +122,8 @@
 - **WHEN** 根文档 §12.4 中跨模块时序图描述 A 调用 B 再调用 C
 - **THEN** 系统 SHALL 确认 A 模块第6章和 B 模块第6章中对应的调用链与此一致
 
+## ADDED Requirements
+
 ### Requirement: Delegate blocked items to CP3 and resume self-check
 系统 SHALL 支持不可自动修复的阻塞项委托 CP3 处理，处理完成后自动回归 CP2.5。
 
@@ -138,33 +138,3 @@
 #### Scenario: Non-standard structure cannot be auto-resolved
 - **WHEN** 项目结构非标准无法自动解析（如自定义构建系统）
 - **THEN** 系统 SHALL 立即标记为阻塞 → 委托 CP3（不做 3 次自动修复尝试）
-
-### Requirement: Generate formatted self-check report
-系统 SHALL 按照标准格式输出自检报告。
-
-#### Scenario: Output self-check report
-- **WHEN** 每次自检完成
-- **THEN** 系统 SHALL 输出包含以下部分的报告：项目信息、模块覆盖与完整性、模块间依赖一致性、根文档完整性、根文档聚合正确性、核心日志文档状态、聚合图表交叉验证、本次发现的问题、阻塞项清单
-
-#### Scenario: Output final report when self-check completes
-- **WHEN** 自检全部通过
-- **THEN** 系统 SHALL 输出最终报告：全部通过的检查项、用户接受的残留项（如有）、文档生成状态汇总
-
-### Requirement: Handle problem types during self-check
-系统 SHALL 按问题类型执行对应的修复操作。
-
-#### Scenario: Root doc chapter missing
-- **WHEN** 根文档章节缺失
-- **THEN** 系统 SHALL 立即生成缺失章节
-
-#### Scenario: Mermaid chart syntax error
-- **WHEN** 发现 Mermaid 图表语法错误（如节点未定义、括号冲突）
-- **THEN** 系统 SHALL 重新生成正确的图表
-
-#### Scenario: Broken link
-- **WHEN** 发现文档间的链接失效
-- **THEN** 系统 SHALL 修复链接
-
-#### Scenario: Dependency relation error
-- **WHEN** 发现模块依赖关系错误
-- **THEN** 系统 SHALL 修正依赖关系描述，重新生成相关图表
