@@ -260,7 +260,16 @@ CP 编号对照: 旧 CP0/CP1/CP1.5/扫描/生成/CP2/CP2.5/CP3 → 新 CP0-7
 # HarmonyOS      find . -maxdepth 3 \( -name "hvigorfile.ts" -o -name "oh-package.json5" \)
 ```
 
-详见：`references/quick-ref.md`（依赖提取命令）| `references/doc-format.md`（依赖矩阵格式）
+**依赖提取命令**（按项目类型）：
+```bash
+# Android: grep -E "(implementation|api|compileOnly)" build.gradle*
+# iOS: grep -E "s\.dependency|pod '" Podfile
+# Vue/React: grep -E '"dependencies"' package.json -A 20
+# Java/Maven: grep -E "<dependency>" pom.xml
+# Flutter: grep -E "^\s+\w+:" pubspec.yaml
+# Node.js: jq '.dependencies' package.json
+```
+**依赖矩阵格式**：行=调用方模块, 列=被调用方模块, 值=依赖类型(强/弱/可选)。详见 `references/quick-ref.md` | `references/doc-format.md`
 
 ---
 
@@ -369,7 +378,7 @@ CP 编号对照: 旧 CP0/CP1/CP1.5/扫描/生成/CP2/CP2.5/CP3 → 新 CP0-7
 
 **代码位置标注规范**：**所有图表**（依赖图、流程图、时序图、导航图、类图、ER图）中涉及代码的节点/参与者都必须标注 `方法名` + `文件路径:行号`，并附步骤API详解表。**所有关键代码步骤必须在文档中展示代码片段**（必需，非推荐）。详见 `references/chapters-ref.md` 的关键代码展示规范。
 
-详见：`references/mermaid-spec.md` | `references/doc-format.md` | `references/log-extraction-guide.md`
+**Mermaid标注三步法**：① 节点文本用 `"方法名\n文件:行号"` 格式 ② 时序图参与者标注模块名 ③ 每个图表下方附API详解表。详见 `references/mermaid-spec.md` | `references/doc-format.md` | `references/log-extraction-guide.md`
 
 ---
 
