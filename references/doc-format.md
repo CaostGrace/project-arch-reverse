@@ -82,6 +82,102 @@ flowchart TD
 
 ## 日志分析文档格式 ★
 
+### 严重度告警框格式 ★
+
+```markdown
+> 🚨 **严重度: 🔴 P0 严重** — 同步链路完全无应用级日志，故障无法追踪
+> 受影响步骤: 6/6 (覆盖率 0%)
+```
+```markdown
+> ⚠️ **严重度: 🟡 P1 警告** — 出口无日志，不可追踪完成状态
+> 受影响步骤: 3/6 (覆盖率 50%)
+```
+```markdown
+> 💡 **严重度: 🟢 P2 合格** — 日志覆盖基本完整，可考虑补充 DEBUG 级别
+> 受影响步骤: 1/6 (覆盖率 83%)
+```
+
+### 建议埋点表格式 ★
+
+```markdown
+**建议补充埋点**:
+| 优先级 | 代码位置 | 建议日志内容 | 建议级别 | 触发原因 |
+|:---:|------|-------------|:---:|------|
+| P0 | SyncWorker.sync():28 | "Sync started, items={count}" | INFO | 入口无日志 |
+| P0 | SyncWorker.sync():catch | "{ExceptionType}: sync failed", e | ERROR | 异常处理无日志 |
+| P1 | Network.request():56 | "Request {url}, status={code}" | INFO | 网络调用无日志 |
+| P1 | DB.insert():89 | "Inserted {n} rows, {key}" | INFO | 数据写入无日志 |
+| P2 | DataMapper.map():112 | "Mapping {from}→{to}" | DEBUG | 数据转换无日志 |
+```
+
+### 日志清单增强格式（§6，含输出示例 + grep）★
+
+```markdown
+| 序号 | 级别 | 平台API调用 | 日志内容摘要 | 所在方法 | 代码位置 | 含义/触发场景 | 实际输出示例 | grep命令 |
+|------|------|------------|-------------|----------|----------|--------------|-------------|---------|
+| 1 | INFO | `Log.i(TAG, "Sync started, count=%d", n)` | "Sync started, count={n}" | `SyncWorker.sync()` | `SyncWorker.kt:30` | 同步触发 | `06-15 14:32:10.123 12345 12345 I SyncWorker: Sync started, count=42` | `adb logcat \| grep "SyncWorker" \| grep "started"` |
+```
+
+### 各平台日志输出格式速查（§7 新增小节）★
+
+```markdown
+## 本平台日志格式
+
+**Android (Logcat)**:
+```
+MM-DD HH:MM:SS.mmm  PID  TID  LEVEL  TAG: message
+```
+| 字段 | 含义 | 示例 |
+|------|------|------|
+| MM-DD HH:MM:SS.mmm | 时间戳 | 06-15 14:32:10.123 |
+| PID | 进程ID | 12345 |
+| TID | 线程ID | 12345 |
+| LEVEL | I/D/W/E | I |
+| TAG | Log TAG | SyncWorker |
+
+默认过滤命令: `adb logcat -s TAG:LEVEL`
+```
+
+```markdown
+**Java后端 (logback/SLF4J)**:
+```
+YYYY-MM-DD HH:MM:SS.mmm [thread] LEVEL  logger - message
+```
+
+**iOS (os_log/Logger)**:
+```
+YYYY-MM-DD HH:MM:SS.mmm+TZ  App[PID:TID] [TAG] message
+```
+
+**Node.js (winston)**:
+```
+YYYY-MM-DDTHH:MM:SS.mmmZ [level]: message {"key":"value"}
+```
+
+**Flutter (debugPrint)**:
+```
+[TAG] message {param: value}
+```
+
+**HarmonyOS (hilog)**:
+```
+MM-DD HH:MM:SS.mmm  PID  TID  LEVEL  domain/TAG: message
+```
+```
+
+### 故障排查步骤增强格式（§8，4 要素）★
+
+```markdown
+### 故障: 同步未触发
+
+**步骤 1: 确认同步是否被调度**
+- **命令**: `adb logcat -d | grep "SyncWorker" | grep "started"`
+- **✅ 预期正常输出**: `06-15 14:32:10.123 12345 12345 I SyncWorker: Sync started, count=42`
+- **❌ 预期异常输出**: 无输出
+- **⚠️ 无输出 → 诊断**: 检查 WorkManager 调度周期和约束条件
+- **❌ ERROR 输出**: `SyncWorker: sync failed` → 跳转步骤 3
+```
+
 ### 执行路径日志追踪表 (§3)
 
 ```markdown

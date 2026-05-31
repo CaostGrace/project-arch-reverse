@@ -54,4 +54,22 @@
 
 #### Scenario: Required chapters in scenario log
 - **WHEN** 生成场景日志文档
-- **THEN** 系统 SHALL 包含以下章节：§1 场景概述（业务场景名、触发条件、涉及模块列表含代码位置）、§2 端到端日志追踪（Mermaid 时序图标注每步日志存在性 + 步骤日志明细表）、§3 各模块日志连接点（模块间日志关联：A 模块的 INFO 对应 B 模块的 DEBUG 等）、§4 异常传播全景（跨模块异常传播 Mermaid + 每个传播节点的日志表现）、§5 故障定位指南（按症状 → 日志关键词 → 定位模块 → 排查步骤）
+- **THEN** 系统 SHALL 包含以下章节：§1 场景概述（业务场景名、触发条件、涉及模块列表含代码位置）、§2 端到端日志追踪（Mermaid 时序图标注每步日志存在性 + 步骤日志明细表 + 各模块输出示例）、§3 各模块日志连接点（模块间日志关联）、§4 异常传播全景（跨模块异常传播 Mermaid + 每节点日志表现）、§5 故障定位指南（按症状 → 日志关键词 → 定位模块 → 逐步 grep 命令 + 预期输出）、§6 改进建议（按模块分组埋点建议表：优先级 | 代码位置 | 建议内容 | 级别 | 所属模块）
+
+### Requirement: Function log §4 with severity alert and recommendations
+函数级日志 §4 SHALL 包含严重度告警和建议埋点。
+
+#### Scenario: §4 severity alert
+- **WHEN** 生成函数级日志 §4
+- **THEN** 系统 SHALL 在覆盖率统计上方输出严重度告警框（与模块级日志同格式）
+
+#### Scenario: §4 function recommendation table
+- **WHEN** 函数严重度为 🔴P0 或 🟡P1
+- **THEN** 系统 SHALL 附加该函数的建议埋点表
+
+### Requirement: Function log §5 with expected output
+函数级日志 §5 SHALL 包含逐步排查命令和预期输出示例。
+
+#### Scenario: §5 step-by-step with expected output
+- **WHEN** 生成函数级日志 §5 排查指南
+- **THEN** 系统 SHALL 每个排查步骤附带平台对应的 grep 命令、预期正常输出示例、预期异常输出示例、无输出时的诊断方向

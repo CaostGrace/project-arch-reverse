@@ -239,7 +239,60 @@ Error 日志若附带异常对象，需记录异常类型：
 
 核心日志清单表格（第3章格式）：
 ```markdown
-| 序号 | 日志级别 | 平台API调用 | 日志内容摘要 | 所在方法 | 代码位置 | 含义/触发场景 |
-|------|----------|------------|-------------|----------|----------|--------------|
-| 1 | INFO | `Log.i(TAG, "...")` | "..." | `Class.method()` | `file.kt:45` | ... |
+| 序号 | 日志级别 | 平台API调用 | 日志内容摘要 | 所在方法 | 代码位置 | 含义/触发场景 | 实际输出示例 | grep命令 |
+|------|----------|------------|-------------|----------|----------|--------------|-------------|---------|
+| 1 | INFO | `Log.i(TAG, "...")` | "..." | `Class.method()` | `file.kt:45` | ... | `时间 进程 线程 I TAG: msg` | `adb logcat \| grep "TAG"` |
 ```
+
+> 增强格式（含输出示例 + grep 命令列）用于文档 §6。输出示例列根据项目类型自动生成对应平台的日志格式。
+
+## 各平台日志输出格式参考
+
+### Android (Logcat)
+```
+MM-DD HH:MM:SS.mmm  PID  TID  LEVEL  TAG: message
+```
+| 字段 | 含义 | 示例 |
+|------|------|------|
+| MM-DD HH:MM:SS.mmm | 时间戳 | 06-15 14:32:10.123 |
+| PID | 进程ID | 12345 |
+| TID | 线程ID | 12345 |
+| LEVEL | I/D/W/E | I |
+| TAG | Log TAG | SyncWorker |
+
+默认命令: `adb logcat -s TAG:LEVEL`
+
+### iOS (os_log / Logger)
+```
+YYYY-MM-DD HH:MM:SS.mmm+TZ  AppName[PID:TID] [Subsystem:Category] message
+```
+默认命令: `log show --predicate 'subsystem contains "TAG"' | grep "keyword"`
+
+### Java 后端 (logback / SLF4J)
+```
+YYYY-MM-DD HH:MM:SS.mmm [thread-name] LEVEL  logger.name - message
+```
+默认命令: `grep "logger.name" app.log | grep -E "keyword"`
+
+### Node.js (winston)
+```
+YYYY-MM-DDTHH:MM:SS.mmmZ [level]: message {"key":"value", ...}
+```
+默认命令: `grep "message" app.log | jq '.key'`
+
+### Flutter (debugPrint / logger)
+```
+[TAG] message {param: value, ...}
+```
+默认命令: `flutter run --debug | grep "TAG" | grep "keyword"`
+
+### HarmonyOS (hilog)
+```
+MM-DD HH:MM:SS.mmm  PID  TID  LEVEL  domain/TAG: message
+```
+| 字段 | 含义 |
+|------|------|
+| domain | 16进制域标识 (如 0x1234) |
+| TAG | 字符串标签 |
+
+默认命令: `hilog | grep "TAG" | grep "keyword"`

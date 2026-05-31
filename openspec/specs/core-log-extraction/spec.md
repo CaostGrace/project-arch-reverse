@@ -107,3 +107,47 @@
 #### Scenario: Log in try-catch/finally block
 - **WHEN** 日志出现在 try-catch 或 finally 块中
 - **THEN** 系统 SHALL 独立记录，不与其他分支合并
+
+### Requirement: Include severity alert in log coverage evaluation (§5)
+日志覆盖评估 §5 SHALL 包含严重度告警框。
+
+#### Scenario: CRITICAL severity alert
+- **WHEN** 调用链覆盖率为 0% 或入口无日志或异常处理无日志
+- **THEN** 系统 SHALL 在 §5 顶部输出 🚨 🔴P0 严重告警框，包含判定原因和受影响步骤数
+
+#### Scenario: WARNING severity alert
+- **WHEN** 调用链出口无日志或覆盖率 < 50%
+- **THEN** 系统 SHALL 在 §5 顶部输出 ⚠️ 🟡P1 警告告警框
+
+#### Scenario: OK severity alert
+- **WHEN** 调用链覆盖率 ≥ 50% 且有 1-2 步缺失
+- **THEN** 系统 SHALL 在 §5 顶部输出 💡 🟢P2 合格提示
+
+#### Scenario: Recommendation table below alert
+- **WHEN** 严重度为 🔴P0 或 🟡P1
+- **THEN** 系统 SHALL 在告警框下方附加 5 列建议埋点表：优先级 | 代码位置 | 建议日志内容 | 建议级别 | 触发原因
+
+### Requirement: Include log output examples and grep commands in log inventory (§6)
+日志清单 §6 SHALL 包含各平台实际输出示例和可直接使用的 grep 命令。
+
+#### Scenario: Log table with output example column
+- **WHEN** 生成 §6 日志清单表格
+- **THEN** 系统 SHALL 增加"实际输出示例"列，根据项目类型生成对应平台的日志输出格式
+
+#### Scenario: Log table with grep command column
+- **WHEN** 生成 §6 日志清单表格
+- **THEN** 系统 SHALL 增加"grep命令"列，生成平台对应的过滤命令
+
+### Requirement: Include platform log format reference in §7
+日志级别说明与排查过滤 §7 SHALL 包含项目类型对应的日志格式速查。
+
+#### Scenario: Platform format reference
+- **WHEN** 生成 §7
+- **THEN** 系统 SHALL 包含"本平台日志格式"小节：日志行格式模板、各字段含义、默认过滤命令
+
+### Requirement: Enhance troubleshooting decision tree with expected output (§8)
+故障排查决策树 §8 的每个排查步骤 SHALL 包含 4 要素。
+
+#### Scenario: Troubleshooting step with 4 elements
+- **WHEN** 生成 §8 决策树每个排查步骤
+- **THEN** 系统 SHALL 包含：① 排查命令（可复制执行）② 预期正常输出示例 ③ 预期异常输出示例 ④ 无输出时的诊断方向

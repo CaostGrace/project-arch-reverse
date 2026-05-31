@@ -241,3 +241,22 @@
 #### Scenario: Module clean
 - **WHEN** 模块内无 dead 节点
 - **THEN** 系统 SHALL 标注"模块无死代码"
+
+### Requirement: Generate log deficiency summary in root document
+系统 SHALL 在 codegraph 模式下聚合所有模块日志的严重度评估结果，在根文档 §23 之后生成日志缺陷汇总章节。
+
+#### Scenario: Aggregate severity statistics
+- **WHEN** codegraph 可用且所有模块日志已生成
+- **THEN** 系统 SHALL 在根文档日志缺陷汇总章输出全局统计：🔴严重 X 个 / 🟡警告 Y 个 / 🟢合格 Z 个
+
+#### Scenario: List P0 critical defects
+- **WHEN** 存在严重度为 🔴P0 的日志缺陷
+- **THEN** 系统 SHALL 输出 P0 严重缺陷列表：调用链描述 | 涉及模块 | 覆盖率 | 详见链接（指向对应日志文档 §5）
+
+#### Scenario: List P1 warnings
+- **WHEN** 存在严重度为 🟡P1 的日志缺陷
+- **THEN** 系统 SHALL 输出 P1 警告列表，附带简要说明和详见链接
+
+#### Scenario: Manual mode skip
+- **WHEN** codegraph 不可用
+- **THEN** 系统 SHALL 标注"codegraph 不可用，日志缺陷评估跳过"
