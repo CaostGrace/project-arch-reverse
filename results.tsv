@@ -3,3 +3,8 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-05-26T22:13	6e76e73	project-arch-reverse	74.9	85.0	keep	Frontmatter+工作流+架构	添加英文触发词、5场景速查、内联核心判定表、章节速查、快速自检清单	dry_run
 2026-05-26T22:21	b2b1039	project-arch-reverse	85.0	87.4	keep	整体架构+工作流+指令具体性	Phase2.5探索性重写：流程驱动重组SKILL.md+references增强（输出质量检查点+交叉引用规范+快速自检3问+日志覆盖矩阵）	dry_run
 2026-05-26T22:35	37587f7	project-arch-reverse	87.4	91.9	keep	D3边界条件+D4检查点+D6资源整合度	混合项目/Monorepo/用户覆盖/类型误判回退+通配符消除+4项覆盖机制	dry_run
+2026-05-31T17:45	baseline	project-arch-reverse	-	87.5	baseline	-	第4轮初始评估	dry_run
+2026-05-31T17:49	4fac75e	project-arch-reverse	87.5	88.3	keep	D1Frontmatter	精简description仅保留三要素	dry_run
+2026-05-31T17:50	588b69d	project-arch-reverse	88.3	89.2	keep	D3边界+D4检查点	CP2全局安装前增加用户确认+拒绝降级路径	dry_run
+2026-05-31T17:51	32c5f31	project-arch-reverse	89.2	89.9	keep	D2工作流	补充CP1/CP5/CP7显式输入标注	dry_run
+2026-05-31T17:52	b803205	project-arch-reverse	89.9	90.7	keep	D5指令具体性	内联依赖提取命令+Mermaid标注三步法	dry_run
