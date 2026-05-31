@@ -168,8 +168,10 @@ flowchart TD
 | 根文档 | `docs/architecture/` | `{项目名称}项目架构文档.md` |
 | 模块文档 | `docs/architecture/modules/{模块}/` | `{模块名称}模块架构.md` |
 | 核心日志文档 | `docs/logs/{模块}/` | `{模块名称}_核心日志.md` |
+| 函数级日志 | `docs/logs/{模块}/` | `{函数名}_关键函数日志.md` |
+| 场景日志 | `docs/logs/{模块}/` | `{场景名}_场景日志.md` |
 
-> ⚠️ **重要**：**所有模块的架构文档都必须生成，不可省略！** 即使某些模块功能简单，也必须生成对应的模块架构文档。核心模块的日志文档也**必须生成**。非核心模块（构建脚本、纯工具库、测试模块等，且复杂度低且用户未指定）无需日志文档。
+> ⚠️ **重要**：**所有模块的架构文档都必须生成，不可省略！** 即使某些模块功能简单，也必须生成对应的模块架构文档。日志触发模块列表中的模块必须生成日志文档。非触发模块（构建脚本、纯工具库、测试模块，且无高复杂度函数、不在关键调用链上）无需日志文档。
 
 **输出文件结构**：
 ```
@@ -180,15 +182,13 @@ flowchart TD
     │   └── modules/
     │       ├── {模块A}/
     │       │   └── {模块A名称}模块架构.md       # 模块文档（12章）- 必须生成
-    │       ├── {模块B}/
-    │       │   └── {模块B名称}模块架构.md
     │       └── ...                             # 所有模块都必须有对应的架构文档
     └── logs/                                   # 日志相关文档
         ├── {模块A}/
-        │   └── {模块A名称}_核心日志.md          # 核心日志文档（5章）- 核心模块必须
-        ├── {模块B}/
-        │   └── {模块B名称}_核心日志.md          # 仅核心模块有
-        └── ...                                 # 仅核心模块有日志文档
+        │   ├── {模块A名称}_核心日志.md          # 第一层: 模块级日志（8/5章）
+        │   ├── {函数名}_关键函数日志.md         # 第二层: 高复杂度函数日志
+        │   └── {场景名}_场景日志.md             # 第二层: 核心场景日志
+        └── ...                                 # 仅日志触发模块有日志目录
 ```
 
 ## 根文档头部
@@ -510,6 +510,110 @@ flowchart TD
 | HarmonyOS | domain (0x0000-0xFFFF) | `hilog.info(domain, TAG, "msg")` |
 | Web (JS/TS) | 模块/组件名 | `console.log/warn/error("[Module]", msg)` |
 | Java 后端 | Logger 实例名 | `log.info/warn/error("msg")` / `LOGGER.debug()` |
+```
+
+### 函数级日志文档格式 ★
+
+**文档头部**：
+```markdown
+# {函数名} 关键函数日志
+
+> 触发原因: [认知复杂度: 42] [被调用次数: 15] [codegraph role=core]
+> 所属模块: {模块名}
+> 代码位置: `path/to/file.kt:120-180`
+```
+
+**§1 函数概述**：
+```markdown
+## 1. 函数概述
+
+| 属性 | 说明 |
+|------|------|
+| **用途** | 基于函数名语义 + 代码推断的功能描述 |
+| **签名** | `fun submitOrder(params: OrderParams): Result<Order>` |
+| **复杂度** | 认知 42 | 圈 18 |
+| **代码位置** | OrderService.kt:120-180 |
+| **主要调用者** | OrderActivity.submit() (UI触发), OrderScheduler.process() (系统触发) |
+```
+
+**§2 执行路径日志追踪**：
+```markdown
+## 2. 执行路径日志追踪
+
+| 步骤 | 方法 | 日志存在 | 级别 | 日志内容 | 文件:行号 |
+|------|------|:---:|------|---------|----------|
+| 1 | submit() | ✅ | INFO | "Order submitted" | OrderActivity.kt:56 |
+| 2 | createOrder() | ✅ | DEBUG | "Creating: {id}" | OrderVM.kt:34 |
+| 3 | validateStock() | ❌ | — | [日志缺失] | Validator.kt:12 |
+```
+
+**§3 异常传播路径**：
+```markdown
+## 3. 异常传播路径
+
+| 步骤 | 方法 | 可能异常 | 捕获? | 日志表现 | 传播方式 |
+|------|------|---------|:---:|---------|---------|
+| 3 | validate() | StockNotFound | ✅ | [WARN] "Stock: {SKU}" | return false |
+| 5 | saveToDB() | SQLException | ✅ | [ERROR] "DB: {msg}" | wrap→OrderEx |
+```
+
+**§4 日志覆盖评估**：
+```markdown
+## 4. 日志覆盖评估
+
+**覆盖率**: 8/12 = 67%
+
+**缺失日志步骤**: validateStock() → 建议添加 INFO 日志记录校验结果
+```
+
+**§5 故障排查指南**：
+```markdown
+## 5. 故障排查指南
+
+` ` `mermaid
+flowchart TD
+    A["[ERROR] DB: {msg}"] --> B["检查数据库连接"]
+    A --> C["检查 SQL 语法"]
+    B --> D["验证 DataSource 配置"]
+    C --> E["review 最近迁移文件"]
+` ` `
+
+**日志过滤命令**:
+```bash
+adb logcat | grep "OrderService" | grep -E "ERROR|WARN"
+```
+```
+
+### 场景日志文档格式 ★
+
+**文档头部**：
+```markdown
+# {场景名} 场景日志
+
+> 触发原因: [跨模块调用链: 6模块, 12步] [核心业务流程]
+> 涉及模块: UI → Service → RiskEngine → Gateway → Payment → DB
+```
+
+**§2 端到端日志追踪**：
+```markdown
+## 2. 端到端日志追踪
+
+| 模块 | 步骤 | 方法 | 日志存在 | 级别 | 日志内容 | 文件:行号 |
+|------|------|------|:---:|------|---------|----------|
+| app | 1 | submitOrder() | ✅ | INFO | "Order submitted" | OrderActivity.kt:56 |
+| order | 2 | createOrder() | ✅ | INFO | "Creating: {id}" | OrderService.kt:34 |
+| risk | 3 | evaluateRisk() | ❌ | — | [日志缺失] | RiskEngine.kt:89 |
+| ...
+```
+
+**§3 各模块日志连接点**：
+```markdown
+## 3. 各模块日志连接点
+
+| 上游模块 | 上游最后一条日志 | 下游模块 | 下游第一条日志 | 关联说明 |
+|----------|----------------|---------|---------------|---------|
+| app | [INFO] "Order submitted" @ OrderActivity.kt:56 | order | [INFO] "Creating: {id}" @ OrderService.kt:34 | 用户提交→订单创建 |
+| order | [INFO] "Order saved" @ OrderService.kt:78 | risk | [无日志] @ RiskEngine.kt:89 | ⚠️ 日志链断裂 |
 ```
 
 ## 任务清单文件格式 (.task-checklist.md)

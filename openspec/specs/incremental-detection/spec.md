@@ -31,12 +31,42 @@
 - **THEN** 系统 SHALL 标记该模块为核心模块
 
 #### Scenario: Module has high complexity
-- **WHEN** 模块包含超过 20 个文件或超过 5000 行代码
+- **WHEN** 模块包含超过 10 个文件或超过 2000 行代码
 - **THEN** 系统 SHALL 标记该模块为核心模块
 
 #### Scenario: Module is build script or pure utility
 - **WHEN** 模块为构建脚本、Gradle 插件、纯工具库（无 UI 无后台且复杂度低）或测试模块
-- **THEN** 系统 SHALL 标记该模块为非核心模块，不需要生成日志文档
+- **THEN** 系统 SHALL 标记该模块为非核心模块
+
+### Requirement: Determine log trigger module list independently
+系统 SHALL 构建"日志触发模块列表"，与核心模块判定解耦，作为日志文档生成的实际范围。
+
+#### Scenario: Log trigger list includes core modules
+- **WHEN** 模块被标记为核心模块
+- **THEN** 系统 SHALL 将该模块加入日志触发模块列表，触发原因标注"核心模块"
+
+#### Scenario: Log trigger list includes codegraph complexity modules
+- **WHEN** codegraph 可用且模块内含认知复杂度>10 或 被调用次数>3 的函数
+- **THEN** 系统 SHALL 将该模块加入日志触发模块列表，触发原因标注"codegraph:复杂度"
+
+#### Scenario: Log trigger list includes call chain modules
+- **WHEN** codegraph 可用且模块处于跨模块关键调用链上（步数≥6, 参与者≥4）
+- **THEN** 系统 SHALL 将该模块加入日志触发模块列表，触发原因标注"codegraph:调用链"
+
+#### Scenario: Log trigger list is union of all sources
+- **WHEN** 构建日志触发模块列表
+- **THEN** 系统 SHALL 取并集：日志触发模块 = 核心模块列表 ∪ codegraph 高复杂度函数所在模块列表 ∪ codegraph 关键调用链模块列表
+
+#### Scenario: User can adjust log trigger list
+- **WHEN** 用户要求添加或移除某个模块的日志触发标记
+- **THEN** 系统 SHALL 以用户指定的日志触发范围为准
+
+### Requirement: Present detection report with log trigger information
+系统 SHALL 在 CP0 检测报告中输出日志触发模块列表及预计日志文档数。
+
+#### Scenario: Detection report includes log trigger module list
+- **WHEN** 展示 CP0 检测报告
+- **THEN** 系统 SHALL 在报告中展示：日志触发模块列表（含每个模块的触发原因）、预计第一层日志文档数（模块级）、预计第二层日志文档数（函数级 + 场景级，codegraph 可用时）
 
 ### Requirement: Present detection report and wait for user confirmation
 系统 SHALL 在 CP0 阶段输出检测报告并等待用户确认，不可跳过。

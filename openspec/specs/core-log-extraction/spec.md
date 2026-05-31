@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Extract log statements from source code
-系统 SHALL 扫描核心模块的源代码，提取所有日志语句并生成核心日志文档。
+系统 SHALL 扫描日志触发模块列表的源代码，提取所有日志语句并生成日志文档。
 
 #### Scenario: Extract Android logs
 - **WHEN** 项目类型为 Android
@@ -27,16 +27,28 @@
 - **WHEN** 项目类型为 HarmonyOS Next
 - **THEN** 系统 SHALL 使用 `grep -rn "hilog\.\|console\." --include="*.ets" --include="*.ts"` 提取日志调用
 
-### Requirement: Generate core log document with 5 chapters for each core module
-系统 SHALL 为每个核心模块生成包含 5 章的核心日志文档。
+### Requirement: Generate log documents for all log-trigger modules
+系统 SHALL 为日志触发模块列表中的每个模块生成日志文档。日志触发模块 = 核心模块 ∪ codegraph 高复杂度函数所在模块 ∪ codegraph 关键调用链模块。
 
-#### Scenario: Generate log doc for core module
-- **WHEN** 模块被标记为核心模块
-- **THEN** 系统 SHALL 创建 `docs/logs/{模块名}/{模块名}_核心日志.md`，包含全部 5 章
+#### Scenario: Generate log doc for any log-trigger module
+- **WHEN** 模块在日志触发模块列表中
+- **THEN** 系统 SHALL 创建 `docs/logs/{模块名}/{模块名}_核心日志.md`，codegraph 模式下包含全部 8 章，手动模式下包含全部 5 章，文档头部标注触发原因
 
-#### Scenario: Skip log doc for non-core module
-- **WHEN** 模块被标记为非核心（构建脚本/纯工具库/测试模块，且复杂度低）
-- **THEN** 系统 SHALL 不生成核心日志文档
+#### Scenario: Generate function-level log for high-complexity functions
+- **WHEN** codegraph 可用且函数被标记为需生成函数级日志（认知复杂度>10 或 被调用次数>3 或 role=core）
+- **THEN** 系统 SHALL 创建 `docs/logs/{所属模块}/{函数名}_关键函数日志.md`，包含 5 章
+
+#### Scenario: Generate scenario log for cross-module call chains
+- **WHEN** codegraph 可用且跨模块调用链被标记为需生成场景日志（步数≥6, 参与者≥4）
+- **THEN** 系统 SHALL 创建 `docs/logs/{主要模块}/{场景名}_场景日志.md`，包含 5 章
+
+#### Scenario: Skip log docs for non-trigger modules
+- **WHEN** 模块不在日志触发模块列表中（构建脚本/纯工具库/测试模块，且无高复杂度函数，不在关键调用链上）
+- **THEN** 系统 SHALL 不生成任何日志文档
+
+#### Scenario: Manual mode annotation in log headers
+- **WHEN** codegraph 不可用
+- **THEN** 系统 SHALL 在所有生成的日志文档头部标注：`> ⚠️ [手动模式] codegraph 不可用，复杂度判定为近似值，日志覆盖可能不完整。建议安装 @optave/codegraph 重新分析。`
 
 ### Requirement: Follow log scan priority order
 日志扫描 SHALL 按优先级顺序执行。

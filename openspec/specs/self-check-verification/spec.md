@@ -95,19 +95,35 @@
 - **THEN** 系统 SHALL 确认至少一个模块文档第7章引用了该实体
 
 ### Requirement: Check core log document completeness (Step 5)
-系统 SHALL 验证核心模块日志文档的完整性和日志覆盖范围。
+系统 SHALL 验证两层日志文档的完整性和日志覆盖范围。
 
-#### Scenario: Core module has complete log doc
-- **WHEN** 核心模块的日志文档第3章覆盖了所有核心功能，每个功能 ≥3 条关键日志
-- **THEN** 系统 SHALL 标记日志文档完整
+#### Scenario: All log-trigger modules have first-layer log docs
+- **WHEN** 日志触发模块列表中的模块有完整的模块级日志文档（`{模块}_核心日志.md`，8章/codegraph 或 5章/手动）
+- **THEN** 系统 SHALL 标记第一层日志文档完整
 
-#### Scenario: Core module missing log doc
-- **WHEN** 核心模块缺少 `docs/logs/{模块名}/` 目录
-- **THEN** 系统 SHALL 立即调用日志提取流程生成文档
+#### Scenario: All triggered functions have second-layer log docs
+- **WHEN** codegraph 可用且所有标记为"需生成函数级日志"的函数都有 `{函数名}_关键函数日志.md`
+- **THEN** 系统 SHALL 标记第二层函数日志文档完整
+
+#### Scenario: All triggered scenarios have second-layer log docs
+- **WHEN** codegraph 可用且所有标记为"需生成场景日志"的调用链都有 `{场景名}_场景日志.md`
+- **THEN** 系统 SHALL 标记第二层场景日志文档完整
+
+#### Scenario: Log-trigger module missing first-layer log doc
+- **WHEN** 日志触发模块列表中的模块缺少 `docs/logs/{模块名}/` 目录
+- **THEN** 系统 SHALL 立即调用日志提取流程生成第一层模块级日志文档
+
+#### Scenario: Auto-check log coverage
+- **WHEN** 日志触发模块的日志文档第3章覆盖了所有核心功能，每个功能 ≥3 条关键日志
+- **THEN** 系统 SHALL 标记日志覆盖合格
+
+#### Scenario: Manual mode annotation check
+- **WHEN** codegraph 不可用
+- **THEN** 系统 SHALL 检查所有日志文档头部是否包含 `[手动模式]` 标注
 
 #### Scenario: Architecture change without log sync
-- **WHEN** 架构文档有更新但对应日志文档未同步
-- **THEN** 系统 SHALL 立即同步更新日志文档
+- **WHEN** 架构文档有更新但对应模块的日志文档（第一层 + 第二层）未同步
+- **THEN** 系统 SHALL 立即同步更新所有层次的日志文档
 
 ### Requirement: Verify aggregated chart cross-reference consistency (Step 6)
 系统 SHALL 验证根文档第12章聚合图表与模块文档 §6 的一致性。

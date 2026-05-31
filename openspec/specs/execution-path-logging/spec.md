@@ -1,11 +1,15 @@
 ## ADDED Requirements
 
-### Requirement: Trace log statements along execution paths
-系统 SHALL 基于 codegraph 调用链追踪每条核心能力执行路径上的所有日志语句。
+### Requirement: Trace log statements along execution paths for all log-trigger modules
+系统 SHALL 基于 codegraph 调用链追踪日志触发模块列表中所有模块的每条核心能力执行路径上的所有日志语句，包括非核心但含高复杂度函数的模块。
 
 #### Scenario: Extract logs for each step in call chain
 - **WHEN** codegraph 可用且核心能力调用链已建立
 - **THEN** 系统 SHALL 对调用链上每一步函数 grep 日志语句，输出 §3 执行路径日志追踪表（步骤|方法|日志存在|级别|内容|文件:行号）
+
+#### Scenario: Extract logs for complex function in non-core module
+- **WHEN** codegraph 可用且非核心模块中的函数被标记为需生成函数级日志
+- **THEN** 系统 SHALL 为该函数建立调用链并逐步骤 grep 日志语句
 
 #### Scenario: Mark missing log steps
 - **WHEN** 调用链上某函数无日志语句
