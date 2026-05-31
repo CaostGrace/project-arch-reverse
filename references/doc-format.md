@@ -59,6 +59,28 @@ flowchart TD
 ` ` `
 ```
 
+### 重构建议清单格式
+
+```markdown
+| 优先级 | 问题类型 | 位置 | 当前值 | 阈值 | 建议 |
+|--------|---------|------|--------|------|------|
+| P0 | 循环依赖 | A→B→C→A | 3节点 | 0 | 提取公共接口到 core 模块 |
+| P1 | 高复杂度 | OrderService.create() | cognitive 22 | 15 | 拆分为 validate/calculate/save |
+| P1 | 高耦合 | PaymentGateway | fan-out 14 | 10 | 引入 Facade 模式解耦 |
+| P2 | 边界违规 | data→ui | 直接调用 | 禁止 | 通过 domain 层中转 |
+```
+
+### 死代码清单格式
+
+```markdown
+| 函数/类 | 文件:行号 | 角色 | 复杂度 | 建议 |
+|---------|----------|------|--------|------|
+| LegacyService.process() | legacy/LegacyService.java:34 | dead | 8 | 确认后删除 |
+| unusedConfig() | config/AppConfig.kt:56 | dead | 3 | 标记 @Deprecated |
+
+**统计**: 死函数 X/总数 Y = Z%  |  死模块: [list]
+```
+
 ## 格式自检清单
 
 生成文档后，快速逐项检查以下格式问题：
