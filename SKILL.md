@@ -144,9 +144,11 @@ CP 编号对照: 旧 CP0/CP1/CP1.5/扫描/生成/CP2/CP2.5/CP3 → 新 CP0-7
     │     ├── 已安装 → 检查 .codegraph/graph.db
     │     │   ├── 存在 → ✅ codegraph 分析模式
     │     │   └── 不存在 → codegraph build → 成功则分析模式
-    │     └── 未安装 → npm install -g @optave/codegraph → codegraph build
-    │                   ├── 成功 → ✅ codegraph 分析模式
-    │                   └── 失败 → ⚠️ 降级: 手动扫描模式
+    │     └── 未安装 → 询问用户"是否全局安装 @optave/codegraph？"
+    │                   ├── 用户同意 → npm install -g @optave/codegraph → codegraph build
+    │                   │   ├── 成功 → ✅ codegraph 分析模式
+    │                   │   └── 失败 → ⚠️ 降级: 手动扫描模式
+    │                   └── 用户拒绝 → ⚠️ 降级: 手动扫描模式
     └── npm 不可用 → 询问用户"未检测到 npm 环境，是否安装 Node.js？"
           ├── 用户同意 → 安装 Node.js → 继续 codegraph 检测
           └── 用户拒绝 → ⚠️ 降级: 手动扫描模式（跳过 codegraph）
