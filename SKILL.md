@@ -1,7 +1,7 @@
 ﻿---
 name: "project-arch-reverse"
 version: "3.0"
-description: "逆向分析项目架构。自动检测项目类型（Android/iOS/Java后端/Vue/React/Flutter/Node.js/HarmonyOS Next等），分析模块依赖关系，生成含模块依赖图、数据库设计、页面导航的架构文档。**流程图标注方法名+代码文件:行号**。**强制生成所有模块文档，不可省略**。**模块优先生成，按拓扑排序分层**，根文档聚合展示全部核心功能。支持增量更新、人工更正和自检验证（硬门禁，必须全部通过）。Trigger: 中文\"分析项目结构\" \"生成架构文档\" \"项目架构\" \"逆向分析\" \"生成项目文档\" \"模块架构文档\" \"架构逆向\" \"项目分析\" \"自检架构文档\" \"检查架构完整性\" | English \"analyze project structure\" \"generate architecture docs\" \"reverse engineer project\" \"project architecture analysis\" \"module dependency analysis\""
+description: "逆向分析项目架构。自动检测项目类型（Android/iOS/Java后端/Vue/React/Flutter/Node.js/HarmonyOS Next等），分析模块依赖关系，生成含模块依赖图、数据库设计、页面导航的架构文档。**流程图标注方法名+代码文件:行号**。支持增量更新、人工更正和自检验证。Trigger: 中文\"分析项目结构\" \"生成架构文档\" \"项目架构\" \"逆向分析\" \"生成项目文档\" \"模块架构文档\" \"架构逆向\" \"项目分析\" \"自检架构文档\" \"检查架构完整性\" | English \"analyze project structure\" \"generate architecture docs\" \"reverse engineer project\" \"project architecture analysis\" \"module dependency analysis\""
 ---
 
 # 项目架构逆向工程
