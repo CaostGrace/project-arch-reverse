@@ -8,3 +8,7 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-05-31T17:50	588b69d	project-arch-reverse	88.3	89.2	keep	D3边界+D4检查点	CP2全局安装前增加用户确认+拒绝降级路径	dry_run
 2026-05-31T17:51	32c5f31	project-arch-reverse	89.2	89.9	keep	D2工作流	补充CP1/CP5/CP7显式输入标注	dry_run
 2026-05-31T17:52	b803205	project-arch-reverse	89.9	90.7	keep	D5指令具体性	内联依赖提取命令+Mermaid标注三步法	dry_run
+2026-05-31T17:56	7f32318	project-arch-reverse	90.7	91.4	keep	D7整体架构	合并资源使用原则重复强制生成声明	dry_run
+2026-05-31T17:57	1f77a0c	project-arch-reverse	91.4	91.7	keep	D6资源整合	CP3模板映射内联化消除跨引用间接依赖	dry_run
+2026-05-31T18:04	69175bf	project-arch-reverse	91.7	—	revert	Phase2.5重写	探索性重写首轮低于原版	dry_run
+2026-05-31T18:10	89a95ca	project-arch-reverse	91.7	92.2	keep	D4检查点+D7架构	Phase2.5修复版: CP3产出确认+依赖分析路径澄清	dry_run
